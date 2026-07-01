@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nani Job Gmail · Dashboard Pengguna</title>
+    <style>
+        :root {
+            --bg-main: #0d1117;
+            --bg-sidebar: #161b22;
+            --bg-card: #21262d;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #1f6feb;
+            --success: #238636;
+            --success-glow: rgba(35, 134, 54, 0.15);
+            --warning: #9e6a03;
+            --warning-glow: rgba(158, 106, 3, 0.15);
+            --danger: #da3633;
+            --info: #388bfd;
+            --radius-lg: 12px;
+            --radius-md: 8px;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color:transparent; }
+        body { background-color: var(--bg-main); color: var(--text-main); font-family: var(--font); min-height: 100vh; display: flex; overflow-x: hidden; }
+
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--bg-card); border: 1px solid var(--border-color); border-left: 4px solid var(--accent); padding: 12px 20px; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 14px; color: var(--text-heading); transform: translateX(150%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast.show { transform: translateX(0); }
+
+        .sidebar { width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; gap: 30px; height: 100vh; position: fixed; z-index: 100; }
+        .main-panel { flex: 1; margin-left: 260px; padding: 32px; min-height: 100vh; display: flex; flex-direction: column; gap: 24px; padding-bottom: 40px; }
+
+        .logo-area { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--text-heading); }
+        .logo-icon { color: var(--accent); font-size: 24px; }
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; list-style: none; }
+        .nav-item a { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius-md); color: var(--text-main); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+        .nav-item.active a, .nav-item a:hover { background-color: rgba(255,255,255,0.05); color: var(--text-heading); }
+        
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 64px; background: var(--bg-sidebar); border-top: 1px solid var(--border-color); z-index: 99; justify-content: space-around; align-items: center; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 11px; }
+        .bottom-nav-item.active { color: var(--accent); }
+
+        .view-layout { width: 100%; display: flex; flex-direction: column; gap: 24px; }
+        .hidden { display: none !important; }
+
+        .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; flex-wrap: wrap; gap: 16px; }
+        .user-profile-meta { display: flex; align-items: center; gap: 12px; }
+        .avatar { width: 36px; height: 36px; background: #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent); border: 1px solid var(--border-color); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--text-heading); }
+
+        .login-wrapper { max-width: 400px; width: 100%; margin: auto; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 32px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 13px; font-weight: 500; color: var(--text-heading); }
+        .input-control { background: var(--bg-main); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: var(--radius-md); color: var(--text-main); font-size: 14px; outline: none; }
+        .input-control:focus { border-color: var(--accent); }
+        
+        .btn { padding: 10px 16px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .btn-primary { background: var(--success); color: #fff; }
+        .btn-primary:hover { background: #2ea44f; }
+        .btn-secondary { background: #21262d; border-color: var(--border-color); color: var(--text-main); }
+        .btn-secondary:hover { background: #30363d; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-warning { background: #ce7529; color: #fff; }
+        
+        .filter-search-box { display: flex; gap: 12px; width: 100%; align-items: center; background: var(--bg-card); padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); flex-wrap: wrap; }
+        .search-input { flex: 1; min-width: 200px; }
+
+        .task-container-list { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; }
+        .modern-task-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .task-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .badge { font-size: 12px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+        .badge-available { background: rgba(56,139,253,0.15); color: var(--info); border: 1px solid rgba(56,139,253,0.3); }
+        .badge-pending { background: var(--warning-glow); color: #e3b341; border: 1px solid rgba(158,106,3,0.3); }
+        .badge-failed { background: rgba(218,54,51,0.15); color: #f85149; border: 1px solid rgba(218,54,51,0.3); }
+        
+        .task-grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: rgba(0,0,0,0.15); padding: 12px; border-radius: var(--radius-md); }
+        .info-node { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+        .info-node span:first-child { color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+
+        /* WIDGET LIVE CHAT SYSTEM USER */
+        .chat-floating-btn { position: fixed; bottom: 80px; right: 24px; width: 56px; height: 56px; background: var(--accent); color: #fff; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(88,166,253,0.4); z-index: 1000; border: none; transition: transform 0.2s; }
+        .chat-floating-btn:hover { transform: scale(1.05); background: var(--accent-hover); }
+        
+        .chat-box-window { position: fixed; bottom: 150px; right: 24px; width: 330px; height: 400px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: none; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 1000; overflow: hidden; }
+        .chat-header { background: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-body { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .chat-footer { padding: 8px; border-top: 1px solid var(--border-color); display: flex; gap: 6px; background: var(--bg-main); }
+        
+        .msg-bubble { max-width: 80%; padding: 8px 12px; font-size: 13px; line-height: 1.4; border-radius: 14px; word-break: break-word; }
+        .msg-user { background: var(--accent); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg-admin { background: var(--bg-card); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid var(--border-color); }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none !important; }
+            .main-panel { margin-left: 0; padding: 16px; padding-bottom: 84px; }
+            .bottom-nav { display: flex; }
+            .chat-floating-btn { bottom: 90px; right: 16px; }
+            .chat-box-window { bottom: 160px; right: 16px; width: calc(100% - 32px); height: 350px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<button class="chat-floating-btn" id="chatOpenBtn">💬</button>
+
+<div class="chat-box-window" id="chatWindow">
+    <div class="chat-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:8px; height:8px; background:#56d364; border-radius:50%;"></span>
+            <span style="font-size:14px; font-weight:600; color:var(--text-heading);">Live Chat Admin</span>
+        </div>
+        <button id="chatCloseBtn" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">✕</button>
+    </div>
+    <div class="chat-body" id="chatMessageBody"></div>
+    <div class="chat-footer">
+        <input type="text" id="chatInputText" class="input-control" style="flex:1; padding:6px 12px;" placeholder="Ketik pesan ke admin...">
+        <button class="btn btn-primary" id="chatSendBtn" style="padding:6px 12px;">Kirim</button>
+    </div>
+</div>
+
+<div class="bottom-nav" id="mobileNav" style="display: none;">
+    <a href="#" class="bottom-nav-item active" id="mNavTasks">📋 Tasks</a>
+    <a href="#" class="bottom-nav-item" id="mNavWithdraw">💰 Tarik Saldo</a>
+    <a href="#" class="bottom-nav-item" id="mNavLogout">🚪 Keluar</a>
+</div>
+
+<div class="sidebar" id="sidebarPanel" style="display: none;">
+    <div class="logo-area"><span class="logo-icon">✉️</span><span>Job Gmail</span></div>
+    <ul class="nav-menu">
+        <li class="nav-item active" id="dNavTasks"><a href="#">📋 Manajemen Tugas</a></li>
+        <li class="nav-item" id="dNavWithdraw"><a href="#">💰 Tarik Saldo (DANA)</a></li>
+        <li class="nav-item" id="dNavLogout"><a href="#">🚪 Keluar Halaman</a></li>
+    </ul>
+</div>
+
+<div class="main-panel" id="mainContainer">
+    <div id="loginView" class="view-layout">
+        <div class="login-wrapper">
+            <div class="logo-area" style="justify-content: center;"><span class="logo-icon">✉️</span><span>Login Job Gmail</span></div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" class="input-control" placeholder="Masukkan nama pengguna...">
+            </div>
+            <p style="color:red;">Peringatan:<br>usahakan ingat username dan ini bisa di akses public, jadi kalo bisa username panjang dan kombinasi campuran apapun, kalo username sama bisa nabrak ataupun jadi satu</p>
+            <button class="btn btn-primary" id="loginBtn">🚀 Masuk</button>
+        </div>
+    </div>
+
+    <div id="dashboardView" class="view-layout hidden">
+        <div class="panel-header">
+            <div>
+                <h1 style="font-size: 22px; color: var(--text-heading);">Dashboard Kerja</h1>
+                <p style="font-size: 13px; color: var(--text-muted);">Kelola pengerjaan dan komisi harian Anda</p>
+            </div>
+            <div class="user-profile-meta">
+                <div class="avatar" id="avatarLetter">U</div>
+                <div>
+                    <span style="font-size: 14px; font-weight: 600; color: var(--text-heading);" id="userProfileName">Username</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><span class="stat-label">💰 Saldo Anda</span><div class="stat-value" id="statSaldo" style="color: #ffca28;">Rp0</div></div>
+            <div class="stat-card"><span class="stat-label">📋 Task Tersedia</span><div class="stat-value" id="statAvail">0</div></div>
+            <div class="stat-card"><span class="stat-label">⏳ Status Tugas</span><div class="stat-value" id="statStatusText" style="font-size: 16px; margin-top:8px; color: var(--accent);">Tidak Ada</div></div>
+        </div>
+
+        <div id="tasksSubView" class="view-layout">
+            <div class="filter-search-box">
+                <input type="text" id="taskSearchInput" class="input-control search-input" placeholder="Cari berdasarkan ID atau email task...">
+            </div>
+            <div class="task-container-list" id="activeTasksList"></div>
+        </div>
+
+        <div id="withdrawSubView" class="view-layout hidden">
+            <div class="modern-task-card" style="max-width: 500px; width:100%;">
+                <h3>Tarik Saldo Tercepat via DANA 📱</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Masukkan nomor akun dompet digital DANA Anda dengan teliti.</p>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label>Nomor Akun DANA</label>
+                    <input type="text" id="wdDanaNumber" class="input-control" placeholder="08xxxxxxxxxx">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>Jumlah Penarikan (Rp)</label>
+                    <input type="number" id="wdAmount" class="input-control" placeholder="Jumlah penarikan...">
+                </div>
+                <button class="btn btn-warning" id="btnRequestWd">💸 Ajukan Penarikan Dana</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function(){
+        'use strict';
+        const STORAGE_KEY = 'chardox_buzzer_data';
+        let currentUser = null;
+        let dataStore = { tasks: [], users: {}, withdraws: [], chats: {} };
+
+        const toastContainer = document.getElementById('toastContainer');
+        const loginView = document.getElementById('loginView');
+        const dashboardView = document.getElementById('dashboardView');
+        const activeTasksList = document.getElementById('activeTasksList');
+        const mobileNav = document.getElementById('mobileNav');
+        const sidebarPanel = document.getElementById('sidebarPanel');
+
+        const chatOpenBtn = document.getElementById('chatOpenBtn');
+        const chatWindow = document.getElementById('chatWindow');
+        const chatMessageBody = document.getElementById('chatMessageBody');
+        const chatInputText = document.getElementById('chatInputText');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+
+        function triggerToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = msg;
+            toastContainer.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        function loadStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) dataStore = JSON.parse(raw);
+                if (!dataStore.withdraws) dataStore.withdraws = [];
+                if (!dataStore.chats) dataStore.chats = {};
+            } catch(e){}
+        }
+
+        function saveStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataStore));
+        }
+
+        function syncSession() {
+            loadStorage();
+            if(currentUser) {
+                document.getElementById('userProfileName').textContent = currentUser;
+                document.getElementById('avatarLetter').textContent = currentUser.charAt(0).toUpperCase();
+                
+                if(!dataStore.users[currentUser]) {
+                    dataStore.users[currentUser] = { taskId: null, status: 'pending', saldo: 0, workNotes:'', timestamp:'' };
+                }
+                
+                dataStore.users[currentUser].lastSeen = Date.now();
+                saveStorage();
+
+                document.getElementById('statSaldo').textContent = 'Rp' + (dataStore.users[currentUser].saldo || 0).toLocaleString('id-ID');
+                let countAvail = dataStore.tasks.filter(t => !Object.values(dataStore.users).some(u => u.taskId === t.id)).length;
+                document.getElementById('statAvail').textContent = countAvail;
+
+                let statusLabelText = 'Tidak Ada';
+                const userObj = dataStore.users[currentUser];
+                if(userObj.taskId) {
+                    if(userObj.status === 'locked') statusLabelText = '🔒 Sedang Kerja';
+                    if(userObj.status === 'pending') statusLabelText = '⏳ Menunggu Validasi';
+                    if(userObj.status === 'failed') statusLabelText = '❌ Ditolak Admin';
+                    if(userObj.status === 'done') statusLabelText = '✅ Selesai Diterima';
+                }
+                document.getElementById('statStatusText').textContent = statusLabelText;
+
+                renderTasks();
+                renderLiveChat();
+            }
+        }
+
+        function renderTasks() {
+            activeTasksList.innerHTML = '';
+            const search = document.getElementById('taskSearchInput').value.toLowerCase();
+            const userObj = dataStore.users[currentUser] || {};
+
+            if(userObj.taskId && userObj.status !== 'done') {
+                const t = dataStore.tasks.find(task => task.id === userObj.taskId);
+                if(t) createCard(t, userObj.status);
+            }
+
+            dataStore.tasks.forEach(t => {
+                const isTaken = Object.values(dataStore.users).some(u => u.taskId === t.id);
+                if(!isTaken && (t.id.toLowerCase().includes(search) || t.email.toLowerCase().includes(search))) {
+                    createCard(t, 'available');
+                }
+            });
+        }
+
+        function createCard(task, status) {
+            const card = document.createElement('div');
+            card.className = 'modern-task-card';
+            let badge = `<span class="badge badge-available">Tersedia</span>`;
+            let action = `<button class="btn btn-primary" onclick="window.handleTask('${task.id}', 'take')">🚀 Ambil Tugas</button>`;
+
+            if(status === 'locked') {
+                badge = `<span class="badge badge-pending">🔒 Anda Ambil</span>`;
+                action = `
+                    <div style="display:flex;gap:10px;width:100%;flex-wrap:wrap;">
+                        <input type="text" id="note_${task.id}" class="input-control" style="flex:1;min-width:200px;" placeholder="Masukkan Bukti Link / Catatan Kerja...">
+                        <button class="btn btn-primary" onclick="window.handleTask('${task.id}', 'submit')">Submit Kerja</button>
+                        <button class="btn btn-danger" onclick="window.handleTask('${task.id}', 'cancel')">Batal</button>
+                    </div>
+                `;
+            } else if(status === 'pending') {
+                badge = `<span class="badge badge-pending">⏳ Menunggu Validasi Admin</span>`;
+                action = `<span style="color:var(--text-muted); font-size:13px;">Tugas dikirim. Harap tunggu konfirmasi admin...</span>`;
+            } else if(status === 'failed') {
+                badge = `<span class="badge badge-failed">❌ Ditolak</span>`;
+                action = `<button class="btn btn-secondary" onclick="window.handleTask('${task.id}', 'clear')">Bersihkan State & Mulai Baru</button>`;
+            }
+
+            card.innerHTML = `
+                <div class="task-card-header"><h3>ID: ${task.id}</h3>${badge}</div>
+                <div class="task-grid-info">
+                    <div class="info-node"><span>Target</span><span>${task.name}</span></div>
+                    <div class="info-node"><span>Email</span><span>${task.email}</span></div>
+                    <div class="info-node"><span>Password</span><span>${status==='locked' ? task.password : '******'}</span></div>
+                    <div class="info-node"><span>Komisi</span><span style="color:#ffca28; font-weight:bold;">Rp${task.reward.toLocaleString('id-ID')}</span></div>
+                </div>
+                <div style="margin-top:4px;">${action}</div>
+            `;
+            activeTasksList.appendChild(card);
+        }
+
+        window.handleTask = function(id, act) {
+            if(act === 'take') {
+                if(dataStore.users[currentUser].taskId && dataStore.users[currentUser].status !== 'done') {
+                    triggerToast('Selesaikan tugas berjalan Anda terlebih dahulu!'); return;
+                }
+                dataStore.users[currentUser].taskId = id;
+                dataStore.users[currentUser].status = 'locked';
+                dataStore.users[currentUser].timestamp = new Date().toLocaleString('id-ID');
+            } else if(act === 'submit') {
+                const val = document.getElementById(`note_${id}`).value.trim();
+                dataStore.users[currentUser].status = 'pending';
+                dataStore.users[currentUser].workNotes = val;
+            } else if(act === 'cancel' || act === 'clear') {
+                dataStore.users[currentUser].taskId = null;
+                dataStore.users[currentUser].status = 'pending';
+                dataStore.users[currentUser].workNotes = '';
+            }
+            saveStorage(); syncSession();
+        };
+
+        function renderLiveChat() {
+            if(!currentUser) return;
+            chatMessageBody.innerHTML = '';
+            const userRoomLogs = dataStore.chats[currentUser] || [];
+            
+            userRoomLogs.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.className = `msg-bubble ${msg.sender === 'admin' ? 'msg-admin' : 'msg-user'}`;
+                bubble.innerText = msg.text;
+                chatMessageBody.appendChild(bubble);
+            });
+            chatMessageBody.scrollTop = chatMessageBody.scrollHeight;
+        }
+
+        function pushUserChatMessage() {
+            const txt = chatInputText.value.trim();
+            if(!txt || !currentUser) return;
+            
+            if(!dataStore.chats[currentUser]) dataStore.chats[currentUser] = [];
+            
+            dataStore.chats[currentUser].push({
+                sender: currentUser,
+                text: txt,
+                time: Date.now()
+            });
+            
+            saveStorage();
+            chatInputText.value = '';
+            renderLiveChat();
+        }
+
+        chatSendBtn.addEventListener('click', pushUserChatMessage);
+        chatInputText.addEventListener('keypress', (e) => { if(e.key === 'Enter') pushUserChatMessage(); });
+
+        chatOpenBtn.addEventListener('click', () => {
+            chatWindow.style.display = 'flex';
+            chatOpenBtn.style.display = 'none';
+            renderLiveChat();
+        });
+        document.getElementById('chatCloseBtn').addEventListener('click', () => {
+            chatWindow.style.display = 'none';
+            chatOpenBtn.style.display = 'flex';
+        });
+
+        document.getElementById('btnRequestWd').addEventListener('click', function(){
+            const num = document.getElementById('wdDanaNumber').value.trim();
+            const amt = parseInt(document.getElementById('wdAmount').value) || 0;
+            const currentSaldo = dataStore.users[currentUser]?.saldo || 0;
+
+            if(!num || amt <= 0) { triggerToast('Isi nomor DANA dan nominal dengan benar!'); return; }
+            if(amt > currentSaldo) { triggerToast('Saldo Anda tidak mencukupi untuk penarikan ini!'); return; }
+
+            dataStore.users[currentUser].saldo -= amt;
+            dataStore.withdraws.push({
+                id: 'WD-' + Math.floor(Math.random()*90000 + 10000),
+                username: currentUser,
+                danaNumber: num,
+                amount: amt,
+                status: 'pending'
+            });
+            saveStorage(); syncSession();
+            document.getElementById('wdAmount').value = '';
+            triggerToast('Pengajuan penarikan DANA sukses terkirim ke admin!');
+        });
+
+        function routeTo(page) {
+            if(page === 'tasks') {
+                document.getElementById('tasksSubView').classList.remove('hidden');
+                document.getElementById('withdrawSubView').classList.add('hidden');
+            } else {
+                document.getElementById('tasksSubView').classList.add('hidden');
+                document.getElementById('withdrawSubView').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', function(){
+            const user = document.getElementById('loginUsername').value.trim();
+            if(!user) { triggerToast('Nama pengguna tidak boleh kosong!'); return; }
+            currentUser = user;
+            
+            loginView.classList.add('hidden'); 
+            dashboardView.classList.remove('hidden');
+            chatOpenBtn.style.display = 'flex';
+            
+            if(window.innerWidth > 768) {
+                sidebarPanel.style.display = 'flex';
+                mobileNav.style.display = 'none';
+            } else {
+                sidebarPanel.style.display = 'none';
+                mobileNav.style.display = 'flex';
+            }
+            syncSession();
+        });
+
+        document.getElementById('dNavLogout').addEventListener('click', () => location.reload());
+        document.getElementById('mNavLogout').addEventListener('click', () => location.reload());
+        document.getElementById('dNavTasks').addEventListener('click', () => routeTo('tasks'));
+        document.getElementById('mNavTasks').addEventListener('click', () => routeTo('tasks'));
+        document.getElementById('dNavWithdraw').addEventListener('click', () => routeTo('withdraw'));
+        document.getElementById('mNavWithdraw').addEventListener('click', () => routeTo('withdraw'));
+
+        loadStorage();
+        setInterval(syncSession, 3000);
+    })();
+</script>
+<script src="https://nani-sigma.vercel.app/assets/js/cumantampilan.js"></script>
+</body>
+</html>

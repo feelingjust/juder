@@ -192,7 +192,7 @@
 <div class="main-panel" id="mainContainer">
     <div id="loginView" class="view-layout">
         <div class="login-wrapper">
-            <div class="logo-area" style="justify-content: center;"><span class="logo-icon">✉️</span><span>Job Gmail</span></div>
+            <div class="logo-area" style="justify-content: center;"><span class="logo-icon">✉️</span><span>Auth Job Gmail</span></div>
 
             <div class="auth-tabs">
                 <button type="button" class="auth-tab active" id="tabLoginBtn">Masuk</button>
@@ -364,7 +364,7 @@
         const chatSendBtn = document.getElementById('chatSendBtn');
 
         function startRealtimeSync() {
-            db.collection("platform_data").doc("central_storage").onSnapshot((doc) => {
+            window.db.collection("platform_data").doc("central_storage").onSnapshot((doc) => {
                 if (doc.exists) {
                     window.globalData = doc.data();
                     if (!window.globalData.tasks) window.globalData.tasks = [];

@@ -12,6 +12,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+try {
+    firebase.analytics();
+} catch (err) {
+    console.warn('Firebase Analytics tidak aktif di browser ini:', err);
+}
+
 window.currentUser = null;
 window.globalData = { tasks: [], users: {}, withdraws: [], chats: {} };
 
@@ -40,7 +46,7 @@ window.processWd = function(idx, act) {
     } else {
         const wd = window.globalData.withdraws[idx];
         if(window.globalData.users[wd.username]) {
-            window.globalData.users[wd.username].saldo += wd.amount; // Kembalikan saldo user jika ditolak
+            window.globalData.users[wd.username].saldo += wd.amount;
         }
         window.globalData.withdraws.splice(idx, 1);
     }

@@ -84,6 +84,11 @@
         .auth-hint { font-size: 12px; color: var(--text-muted); text-align: center; }
         .cf-turnstile { display: flex; justify-content: center; min-height: 65px; }
         .btn[disabled] { opacity: 0.5; cursor: not-allowed; filter: none !important; }
+
+        .password-field-wrap { position: relative; display: flex; }
+        .password-field-wrap .input-control { padding-right: 42px; width: 100%; }
+        .password-toggle-btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; padding: 6px; font-size: 16px; line-height: 1; color: var(--text-muted); border-radius: 6px; transition: color 0.15s, background 0.15s; }
+        .password-toggle-btn:hover { color: var(--text-heading); background: rgba(255,255,255,0.06); }
         .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-size: 13px; font-weight: 500; color: var(--text-heading); }
         .input-control { background: var(--bg-main); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: var(--radius-md); color: var(--text-main); font-size: 14px; outline: none; }
@@ -201,7 +206,10 @@
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="loginPassword" class="input-control" placeholder="Masukkan password...">
+                    <div class="password-field-wrap">
+                        <input type="password" id="loginPassword" class="input-control" placeholder="Masukkan password...">
+                        <button type="button" class="password-toggle-btn" data-target="loginPassword" aria-label="Lihat/sembunyikan password">👁️</button>
+                    </div>
                 </div>
                 <p id="loginErrorMsg" class="auth-error hidden"></p>
                 <div class="cf-turnstile" id="loginTurnstile" data-sitekey="0x4AAAAAADuSyjdOJeGbXbky" data-callback="onLoginTurnstileSuccess" data-expired-callback="onLoginTurnstileExpired" data-error-callback="onLoginTurnstileExpired" data-theme="dark"></div>
@@ -215,11 +223,17 @@
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="regPassword" class="input-control" placeholder="Buat password...">
+                    <div class="password-field-wrap">
+                        <input type="password" id="regPassword" class="input-control" placeholder="Buat password...">
+                        <button type="button" class="password-toggle-btn" data-target="regPassword" aria-label="Lihat/sembunyikan password">👁️</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Ulangi Password</label>
-                    <input type="password" id="regPasswordConfirm" class="input-control" placeholder="Ulangi password...">
+                    <div class="password-field-wrap">
+                        <input type="password" id="regPasswordConfirm" class="input-control" placeholder="Ulangi password...">
+                        <button type="button" class="password-toggle-btn" data-target="regPasswordConfirm" aria-label="Lihat/sembunyikan password">👁️</button>
+                    </div>
                 </div>
                 <p id="registerErrorMsg" class="auth-error hidden"></p>
                 <div class="cf-turnstile" id="registerTurnstile" data-sitekey="0x4AAAAAADuSyjdOJeGbXbky" data-callback="onRegisterTurnstileSuccess" data-expired-callback="onRegisterTurnstileExpired" data-error-callback="onRegisterTurnstileExpired" data-theme="dark"></div>
@@ -276,6 +290,7 @@
 </div>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 <script src="https://nani-sigma.vercel.app/assets/js/cumantampilan.js"></script>
 <script>
     (function(){
@@ -309,6 +324,17 @@
         customAlertOkBtn.addEventListener('click', closeCustomAlert);
         customAlertOverlay.addEventListener('click', (e) => { if(e.target === customAlertOverlay) closeCustomAlert(); });
         document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && customAlertOverlay.classList.contains('show')) closeCustomAlert(); });
+
+        document.querySelectorAll('.password-toggle-btn').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                const input = document.getElementById(btn.getAttribute('data-target'));
+                if(!input) return;
+                const isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                btn.textContent = isHidden ? '🙈' : '👁️';
+                btn.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Lihat password');
+            });
+        });
         const loginView = document.getElementById('loginView');
         const dashboardView = document.getElementById('dashboardView');
         const activeTasksList = document.getElementById('activeTasksList');

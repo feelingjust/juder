@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>JOB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family: 'Montserrat', sans-serif;
+    line-height:1.6;
+    background:#f7f9fc;
+    color:#333;
+  }
+  a{color:#007bff;text-decoration:none;}
+  a:hover{color:#0056b3;}
+
+  .container{
+    width:90%;
+    max-width:1200px;
+    margin:auto;
+    padding:2rem 0;
+  }
+
+  .hero{
+    text-align:center;
+    padding:4rem 1rem;
+    background:linear-gradient(135deg,#4a90e2,#1976d2);
+    color:#fff;
+    overflow:hidden;
+    position:relative;
+  }
+  .hero h1{
+    font-size:3rem; 
+    margin-bottom:0.5rem;
+    animation:slideDown 1s ease-out forwards;
+  }
+  .hero p{
+    font-size:1.25rem;
+    margin-bottom:1.5rem;
+    animation:fadeInUp 1.5s ease-out forwards;
+    animation-delay:0.3s;
+  }
+  .hero button{
+    padding:0.75rem 1.75rem;
+    font-size:1rem;
+    border:none;
+    cursor:pointer;
+    background:#ffeb3b;
+    color:#333;
+    border-radius:5px;
+    transition:background 0.3s;
+    animation:fadeInUp 1.5s ease-out forwards;
+    animation-delay:0.6s;
+  }
+  .hero button:hover{background:#fdd835;}
+
+  @keyframes slideDown{
+    from{transform:translateY(-30px);opacity:0;}
+    to{transform:translateY(0);opacity:1;}
+  }
+  @keyframes fadeInUp{
+    from{transform:translateY(30px);opacity:0;}
+    to{transform:translateY(0);opacity:1;}
+  }
+
+  .jobs{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:1.5rem;
+    margin-top:3rem;
+  }
+  .card{
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);
+    overflow:hidden;
+    transition:transform 0.3s;
+  }
+  .card:hover{transform:translateY(-5px);}
+  .card h3{
+    background:#1976d2;
+    color:#fff;
+    padding:1rem;
+    font-size:1.25rem;
+  }
+  .card p{
+    padding:1rem;
+    flex:1;
+  }
+
+  footer{
+    text-align:center;
+    padding:1.5rem 0;
+    margin-top:3rem;
+    border-top:1px solid #ddd;
+    color:#777;
+  }
+
+  @media(max-width:600px){
+    .hero h1{font-size:2.25rem;}
+    .hero p{font-size:1rem;}
+    .hero button{font-size:0.9rem;}
+  }
+</style>
+</head>
+
+<body>
+  <header class="hero">
+    <h1>Hayo Mau Job Ya?</h1>
+    <p>Temukan peluang karir terbaik dan mulailah perjalananmu hari ini.</p>
+    <button onclick="location.href='#jobs'">Cari Lowongan</button>
+  </header>
+
+  <section class="container" id="jobs">
+    <h2 style="text-align:center;margin-bottom:1.5rem;">Lowongan Terbaru</h2>
+    <div class="jobs">
+      <!-- Contoh card -->
+      <div class="card">
+        <h3>Frontend Developer</h3>
+        <p>Lokasi: Jakarta | Gaji: Rp8‑12M</p>
+      </div>
+      <div class="card">
+        <h3>Backend Engineer</h3>
+        <p>Lokasi: Bandung | Gaji: Rp10‑15M</p>
+      </div>
+      <div class="card">
+        <h3>UI/UX Designer</h3>
+        <p>Lokasi: Remote | Gaji: Rp7‑13M</p>
+      </div>
+      <!-- Tambahkan card lain sesuai kebutuhan -->
+    </div>
+  </section>
+
+  <footer>
+    © 2026 Hayo Mau Job Ya? • All Rights Reserved
+  </footer>
+</body>
+</html>

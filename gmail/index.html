@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nani Job Gmail · Pengenalan</title>
+    <style>
+        :root {
+            --bg-main: #0d1117;
+            --bg-card: #161b22;
+            --bg-card-hover: #21262d;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-glow: rgba(88, 166, 253, 0.15);
+            --success: #238636;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color:transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: var(--font);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        header {
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(12px);
+            position: fixed;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-heading);
+        }
+
+        /* Hero Section */
+        .hero {
+            max-width: 1200px;
+            width: 100%;
+            margin: 120px auto 60px auto;
+            padding: 0 24px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.2;
+            margin-bottom: 16px;
+            max-width: 800px;
+            animation: fadeInDown 0.8s ease out;
+        }
+
+        /* Animasi Text Gradasi Berjalan */
+        .animated-gradient-text {
+            background: linear-gradient(270deg, #58a6ff, #56d364, #ffca28, #58a6ff);
+            background-size: 600% 600%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientMove 8s ease infinite;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 32px;
+            animation: fadeInUp 1s ease both;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 16px;
+            animation: fadeInUp 1.2s ease both;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--success);
+            color: #fff;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary:hover {
+            background-color: #2ea44f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 164, 79, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-card-hover);
+            border-color: #8b949e;
+            transform: translateY(-2px);
+        }
+
+        /* Features/Info Section */
+        .features {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto 80px auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: #444c56;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .feature-icon {
+            font-size: 28px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            color: var(--text-heading);
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+            減-height: 1.5;
+        }
+
+        /* Keyframe Animations */
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            padding: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-sidebar);
+        }
+
+        /* Responsivitas Layar HP/Tablet */
+        @media (max-width: 768px) {
+            header {
+                padding: 16px 24px;
+            }
+            .nav-links {
+                display: none; /* Menyembunyikan menu di mobile demi kesederhanaan */
+            }
+            .hero {
+                margin-top: 100px;
+            }
+            .hero h1 {
+                font-size: 32px;
+            }
+            .hero p {
+                font-size: 15px;
+            }
+            .cta-group {
+                flex-direction: column;
+                width: 100%;
+                max-width: 280px;
+            }
+            .btn {
+                width: 100%;
+            }
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <a href="" class="logo">
+            <span>✉️</span> Job Gmail
+        </a>
+        <ul class="nav-links">
+            <li><a href="#fitur">Fitur</a></li>
+            <li><a href="#tentang">Tentang</a></li>
+            <li><a href="#kontak">Bantuan</a></li>
+        </ul>
+    </header>
+
+    <!-- Hero Content Section -->
+    <main class="hero">
+        <h1>Platform Manajemen Tugas & Komisi <span class="animated-gradient-text">Gmail Kreatif</span> Secara Terpusat</h1>
+        <p>Selesaikan tugas harian Anda, kelola transparansi penarikan saldo dompet digital DANA, dan berkomunikasi langsung melalui live chat interaktif.</p>
+        <div class="cta-group">
+            <a href="job" class="btn btn-primary">🚀 Mulai Bekerja</a>
+            <a href="#fitur" class="btn btn-secondary">Pelajari Fitur</a>
+        </div>
+    </main>
+
+    <!-- Info/Features Grid Section -->
+    <section class="features" id="fitur">
+        <div class="feature-card">
+            <div class="feature-icon">📋</div>
+            <h3>Manajemen Tugas Modern</h3>
+            <p>Ambil tugas pengerjaan akun Gmail secara real-time. Sistem otomatis mengunci tugas agar tidak terjadi bentrokan pengerjaan antar pengguna.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3>Sistem Saldo Terintegrasi</h3>
+            <p>Dapatkan komisi instan langsung ke saldo akun Anda setiap kali tugas disetujui. Tarik dana kapan pun dengan opsi penarikan DANA tercepat.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <h3>Live Chat Terisolasi</h3>
+            <p>Butuh bantuan admin? Gunakan fitur obrolan pribadi yang aman. Pesan Anda terisolasi penuh sehingga privasi diskusi Anda terjaga sepenuhnya.</p>
+        </div>
+    </section>
+
+    <!-- Footer Layer -->
+    <footer>
+        &copy; 2026 Nani Job Gmail Team. All Rights Reserved.
+    </footer>
+<script src="https://nani-sigma.vercel.app/assets/js/cumantampilan.js"></script>
+</body>
+</html>

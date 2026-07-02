@@ -10,7 +10,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+window.db = firebase.firestore();
 
 try {
     firebase.analytics();
@@ -22,7 +22,7 @@ window.currentUser = null;
 window.globalData = { tasks: [], users: {}, withdraws: [], chats: {} };
 
 window.pushDataToCloud = function() {
-    db.collection("platform_data").doc("central_storage").set(window.globalData);
+    window.db.collection("platform_data").doc("central_storage").set(window.globalData);
 };
 
 window.processWork = function(user, act) {

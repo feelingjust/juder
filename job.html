@@ -310,7 +310,6 @@
     _0xdoc['\x68\x65\x61\x64']['\x61\x70\x70\x65\x6e\x64\x43\x68\x69\x6c\x64'](_0xscript);
   })(67);
 </script>
-
 <script>
     (function(){
         'use strict';
@@ -366,13 +365,15 @@
         const chatSendBtn = document.getElementById('chatSendBtn');
 
         function startRealtimeSync() {
-            if (typeof window.db === 'undefined' || window.db === null) {
-                console.warn("Database window.db belum siap, mencoba lagi dalam 500ms...");
-                setTimeout(startRealtimeSync, 500);
+            const firestoreDb = window.db || (typeof db !== 'undefined' ? db : null);
+            
+            if (!firestoreDb) {
+                console.warn("Koneksi database belum terbaca, mencoba ulang dalam 200ms...");
+                setTimeout(startRealtimeSync, 200);
                 return;
             }
 
-            window.db.collection("platform_data").doc("central_storage").onSnapshot((doc) => {
+            firestoreDb.collection("platform_data").doc("central_storage").onSnapshot((doc) => {
                 if (doc.exists) {
                     window.globalData = doc.data();
                     if (!window.globalData.tasks) window.globalData.tasks = [];
@@ -381,6 +382,8 @@
                     if (!window.globalData.chats) window.globalData.chats = {};
                     if(window.currentUser) syncUIVisuals();
                 }
+            }, (err) => {
+                console.error("Gagal melakukan Sinkronisasi Realtime:", err);
             });
         }
 
@@ -592,39 +595,30 @@
             if(!user || !pass) { showAuthError(loginErrorMsg, 'Username dan Password wajib diisi!'); return; }
             if(!loginTurnstileToken) { showAuthError(loginErrorMsg, 'Selesaikan verifikasi Cloudflare terlebih dahulu.'); return; }
 
-            function executeLogin() {
-                if (typeof window.db === 'undefined' || window.db === null) {
-                    showAuthError(loginErrorMsg, 'Menghubungkan ke database... (Mohon tunggu sebentar)');
-                    setTimeout(executeLogin, 500); 
+            const firestoreDb = window.db || (typeof db !== 'undefined' ? db : null);
+            if(!firestoreDb) { showAuthError(loginErrorMsg, 'Menghubungkan ke database terputus. Silakan muat ulang halaman.'); return; }
+
+            firestoreDb.collection("platform_data").doc("central_storage").get().then((doc) => {
+                let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
+                if(!cloudData.users) cloudData.users = {};
+
+                if(!cloudData.users[user]) {
+                    showAuthError(loginErrorMsg, 'Akun tidak ditemukan. Silakan daftar dulu di tab "Daftar".');
+                    if(window.turnstile) window.turnstile.reset('#loginTurnstile');
+                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+                    return;
+                }
+                if(cloudData.users[user].password !== pass) {
+                    showAuthError(loginErrorMsg, 'Password salah, silakan coba lagi.');
+                    if(window.turnstile) window.turnstile.reset('#loginTurnstile');
+                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
                     return;
                 }
 
-                hideAuthError(loginErrorMsg);
-
-                window.db.collection("platform_data").doc("central_storage").get().then((doc) => {
-                    let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
-                    if(!cloudData.users) cloudData.users = {};
-
-                    if(!cloudData.users[user]) {
-                        showAuthError(loginErrorMsg, 'Akun tidak ditemukan. Silakan daftar dulu di tab "Daftar".');
-                        if(window.turnstile) window.turnstile.reset('#loginTurnstile');
-                        loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
-                        return;
-                    }
-                    if(cloudData.users[user].password !== pass) {
-                        showAuthError(loginErrorMsg, 'Password salah, silakan coba lagi.');
-                        if(window.turnstile) window.turnstile.reset('#loginTurnstile');
-                        loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
-                        return;
-                    }
-
-                    enterDashboard(user, cloudData);
-                }).catch((err) => {
-                    showAuthError(loginErrorMsg, 'Gagal terhubung ke cloud database: ' + err.message);
-                });
-            }
-
-            executeLogin();
+                enterDashboard(user, cloudData);
+            }).catch((err) => {
+                showAuthError(loginErrorMsg, 'Gagal terhubung ke cloud database: ' + err.message);
+            });
         });
 
         registerBtnEl.addEventListener('click', function(){
@@ -638,34 +632,25 @@
             if(pass.length < 6) { showAuthError(registerErrorMsg, 'Password minimal 6 karakter.'); return; }
             if(!registerTurnstileToken) { showAuthError(registerErrorMsg, 'Selesaikan verifikasi Cloudflare terlebih dahulu.'); return; }
 
-            function executeRegister() {
-                if (typeof window.db === 'undefined' || window.db === null) {
-                    showAuthError(registerErrorMsg, 'Menghubungkan ke database... (Mohon tunggu sebentar)');
-                    setTimeout(executeRegister, 500); 
+            const firestoreDb = window.db || (typeof db !== 'undefined' ? db : null);
+            if(!firestoreDb) { showAuthError(registerErrorMsg, 'Menghubungkan ke database terputus. Silakan muat ulang halaman.'); return; }
+
+            firestoreDb.collection("platform_data").doc("central_storage").get().then((doc) => {
+                let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
+                if(!cloudData.users) cloudData.users = {};
+
+                if(cloudData.users[user]) {
+                    showAuthError(registerErrorMsg, 'Username ini sudah terdaftar. Silakan masuk lewat tab "Masuk".');
+                    if(window.turnstile) window.turnstile.reset('#registerTurnstile');
+                    registerTurnstileToken = null; registerBtnEl.disabled = true; registerBtnEl.textContent = '🔒 Selesaikan verifikasi untuk daftar';
                     return;
                 }
 
-                hideAuthError(registerErrorMsg);
-
-                window.db.collection("platform_data").doc("central_storage").get().then((doc) => {
-                    let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
-                    if(!cloudData.users) cloudData.users = {};
-
-                    if(cloudData.users[user]) {
-                        showAuthError(registerErrorMsg, 'Username ini sudah terdaftar. Silakan masuk lewat tab "Masuk".');
-                        if(window.turnstile) window.turnstile.reset('#registerTurnstile');
-                        registerTurnstileToken = null; registerBtnEl.disabled = true; registerBtnEl.textContent = '🔒 Selesaikan verifikasi untuk daftar';
-                        return;
-                    }
-
-                    cloudData.users[user] = { taskId: null, status: 'pending', saldo: 0, workNotes: '', timestamp: '', password: pass };
-                    enterDashboard(user, cloudData);
-                }).catch((err) => {
-                    showAuthError(registerErrorMsg, 'Gagal mendaftarkan akun ke cloud database: ' + err.message);
-                });
-            }
-
-            executeRegister();
+                cloudData.users[user] = { taskId: null, status: 'pending', saldo: 0, workNotes: '', timestamp: '', password: pass };
+                enterDashboard(user, cloudData);
+            }).catch((err) => {
+                showAuthError(registerErrorMsg, 'Gagal mendaftarkan akun ke cloud database: ' + err.message);
+            });
         });
 
         chatSendBtn.addEventListener('click', pushUserChatMessage);
@@ -690,14 +675,14 @@
             }
         }
 
+        setTimeout(startRealtimeSync, 300);
+
         setInterval(function(){
             if(window.currentUser && window.globalData.users[window.currentUser]) {
                 window.globalData.users[window.currentUser].lastSeen = Date.now();
                 window.pushDataToCloud();
             }
         }, 4000);
-        
-        startRealtimeSync();
     })();
 </script>
 </body>

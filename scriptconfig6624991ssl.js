@@ -10,7 +10,8 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-window.db = firebase.database();
+
+window.db = firebase.firestore();
 
 try {
     firebase.analytics();

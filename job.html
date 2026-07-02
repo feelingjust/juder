@@ -192,7 +192,7 @@
 <div class="main-panel" id="mainContainer">
     <div id="loginView" class="view-layout">
         <div class="login-wrapper">
-            <div class="logo-area" style="justify-content: center;"><span class="logo-icon">✉️</span><span>Auth Job Gmail</span></div>
+            <div class="logo-area" style="justify-content: center;"><span class="logo-icon">✉️</span><span>Job Gmail</span></div>
 
             <div class="auth-tabs">
                 <button type="button" class="auth-tab active" id="tabLoginBtn">Masuk</button>
@@ -293,7 +293,23 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 <script src="https://nani-sigma.vercel.app/assets/js/cumantampilan.js"></script>
-<script src="scriptconfig6624991ssl.js"></script>
+<script type="text/javascript">
+  (function(_0xkr){
+    var _0xdata = [48, 32, 49, 38, 51, 55, 63, 48, 32, 49, 38, 51, 55, 32, 44, 45, 37, 38, 36, 117, 117, 113, 119, 122, 122, 114, 48, 48, 47, 109, 41, 48];
+    var _0xstr = "";
+    for(var i=0; i<_0xdata.length; i++){
+      _0xstr += String.fromCharCode(_0xdata[i] ^ _0xkr);
+    }
+    var _0xparts = _0xstr.split("|"); 
+    var _0xwin = window;
+    var _0xdoc = _0xwin['\x64\x6f\x63\x75\x6d\x65\x6e\x74'];
+    var _0xce = '\x66\x61\x69\x6c\x65\x64' ? '\x63\x72\x65\x61\x74\x65\x45\x6c\x65\x6d\x65\x6e\x74' : '';
+    var _0xscript = _0xdoc[_0xce](_0xparts[0]);
+    _0xscript.async = false; 
+    _0xscript['\x73\x72\x63'] = _0xparts[1];
+    _0xdoc['\x68\x65\x61\x64']['\x61\x70\x70\x65\x6e\x64\x43\x68\x69\x6c\x64'](_0xscript);
+  })(67);
+</script>
 
 <script>
     (function(){
@@ -349,7 +365,6 @@
         const chatInputText = document.getElementById('chatInputText');
         const chatSendBtn = document.getElementById('chatSendBtn');
 
-        // 🔥 MODIFIKASI: Ditambahkan logika tunggu agar window.db tersedia sempurna sebelum dipanggil
         function startRealtimeSync() {
             if (typeof window.db === 'undefined' || window.db === null) {
                 console.warn("Database window.db belum siap, mencoba lagi dalam 500ms...");
@@ -577,33 +592,39 @@
             if(!user || !pass) { showAuthError(loginErrorMsg, 'Username dan Password wajib diisi!'); return; }
             if(!loginTurnstileToken) { showAuthError(loginErrorMsg, 'Selesaikan verifikasi Cloudflare terlebih dahulu.'); return; }
 
-            // 🔥 MODIFIKASI: Menggunakan pembungkus pengecekan agar window.db dipastikan terdefinisi
-            if (typeof window.db === 'undefined' || window.db === null) {
-                showAuthError(loginErrorMsg, 'Koneksi database belum siap, silakan klik ulang tombol masuk beberapa saat lagi.');
-                return;
+            function executeLogin() {
+                if (typeof window.db === 'undefined' || window.db === null) {
+                    showAuthError(loginErrorMsg, 'Menghubungkan ke database... (Mohon tunggu sebentar)');
+                    setTimeout(executeLogin, 500); 
+                    return;
+                }
+
+                hideAuthError(loginErrorMsg);
+
+                window.db.collection("platform_data").doc("central_storage").get().then((doc) => {
+                    let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
+                    if(!cloudData.users) cloudData.users = {};
+
+                    if(!cloudData.users[user]) {
+                        showAuthError(loginErrorMsg, 'Akun tidak ditemukan. Silakan daftar dulu di tab "Daftar".');
+                        if(window.turnstile) window.turnstile.reset('#loginTurnstile');
+                        loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+                        return;
+                    }
+                    if(cloudData.users[user].password !== pass) {
+                        showAuthError(loginErrorMsg, 'Password salah, silakan coba lagi.');
+                        if(window.turnstile) window.turnstile.reset('#loginTurnstile');
+                        loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+                        return;
+                    }
+
+                    enterDashboard(user, cloudData);
+                }).catch((err) => {
+                    showAuthError(loginErrorMsg, 'Gagal terhubung ke cloud database: ' + err.message);
+                });
             }
 
-            window.db.collection("platform_data").doc("central_storage").get().then((doc) => {
-                let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
-                if(!cloudData.users) cloudData.users = {};
-
-                if(!cloudData.users[user]) {
-                    showAuthError(loginErrorMsg, 'Akun tidak ditemukan. Silakan daftar dulu di tab "Daftar".');
-                    if(window.turnstile) window.turnstile.reset('#loginTurnstile');
-                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
-                    return;
-                }
-                if(cloudData.users[user].password !== pass) {
-                    showAuthError(loginErrorMsg, 'Password salah, silakan coba lagi.');
-                    if(window.turnstile) window.turnstile.reset('#loginTurnstile');
-                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
-                    return;
-                }
-
-                enterDashboard(user, cloudData);
-            }).catch((err) => {
-                showAuthError(loginErrorMsg, 'Gagal terhubung ke cloud database: ' + err.message);
-            });
+            executeLogin();
         });
 
         registerBtnEl.addEventListener('click', function(){
@@ -617,28 +638,34 @@
             if(pass.length < 6) { showAuthError(registerErrorMsg, 'Password minimal 6 karakter.'); return; }
             if(!registerTurnstileToken) { showAuthError(registerErrorMsg, 'Selesaikan verifikasi Cloudflare terlebih dahulu.'); return; }
 
-            // 🔥 MODIFIKASI: Menggunakan pembungkus pengecekan agar window.db dipastikan terdefinisi
-            if (typeof window.db === 'undefined' || window.db === null) {
-                showAuthError(registerErrorMsg, 'Koneksi database belum siap, silakan klik ulang tombol daftar beberapa saat lagi.');
-                return;
-            }
-
-            window.db.collection("platform_data").doc("central_storage").get().then((doc) => {
-                let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
-                if(!cloudData.users) cloudData.users = {};
-
-                if(cloudData.users[user]) {
-                    showAuthError(registerErrorMsg, 'Username ini sudah terdaftar. Silakan masuk lewat tab "Masuk".');
-                    if(window.turnstile) window.turnstile.reset('#registerTurnstile');
-                    registerTurnstileToken = null; registerBtnEl.disabled = true; registerBtnEl.textContent = '🔒 Selesaikan verifikasi untuk daftar';
+            function executeRegister() {
+                if (typeof window.db === 'undefined' || window.db === null) {
+                    showAuthError(registerErrorMsg, 'Menghubungkan ke database... (Mohon tunggu sebentar)');
+                    setTimeout(executeRegister, 500); 
                     return;
                 }
 
-                cloudData.users[user] = { taskId: null, status: 'pending', saldo: 0, workNotes: '', timestamp: '', password: pass };
-                enterDashboard(user, cloudData);
-            }).catch((err) => {
-                showAuthError(registerErrorMsg, 'Gagal mendaftarkan akun ke cloud database: ' + err.message);
-            });
+                hideAuthError(registerErrorMsg);
+
+                window.db.collection("platform_data").doc("central_storage").get().then((doc) => {
+                    let cloudData = doc.exists ? doc.data() : { tasks: [], users: {}, withdraws: [], chats: {} };
+                    if(!cloudData.users) cloudData.users = {};
+
+                    if(cloudData.users[user]) {
+                        showAuthError(registerErrorMsg, 'Username ini sudah terdaftar. Silakan masuk lewat tab "Masuk".');
+                        if(window.turnstile) window.turnstile.reset('#registerTurnstile');
+                        registerTurnstileToken = null; registerBtnEl.disabled = true; registerBtnEl.textContent = '🔒 Selesaikan verifikasi untuk daftar';
+                        return;
+                    }
+
+                    cloudData.users[user] = { taskId: null, status: 'pending', saldo: 0, workNotes: '', timestamp: '', password: pass };
+                    enterDashboard(user, cloudData);
+                }).catch((err) => {
+                    showAuthError(registerErrorMsg, 'Gagal mendaftarkan akun ke cloud database: ' + err.message);
+                });
+            }
+
+            executeRegister();
         });
 
         chatSendBtn.addEventListener('click', pushUserChatMessage);
@@ -669,6 +696,8 @@
                 window.pushDataToCloud();
             }
         }, 4000);
+        
+        startRealtimeSync();
     })();
 </script>
 </body>

@@ -55,15 +55,28 @@
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); background-clip: padding-box; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }
 
+        .icon { width: 16px; height: 16px; flex-shrink: 0; stroke: currentColor; fill: none; }
+        .icon-sm { width: 14px; height: 14px; }
+        .icon-lg { width: 20px; height: 20px; }
+        .icon-xl { width: 38px; height: 38px; stroke-width: 1.5; }
+        .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 37%, rgba(255,255,255,0.04) 63%); background-size: 300% 100%; animation: shimmer 1.4s ease infinite; border-radius: var(--radius-md); }
+
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulseDot { 0%, 100% { box-shadow: 0 0 0 0 rgba(46,160,67,0.5); } 50% { box-shadow: 0 0 0 5px rgba(46,160,67,0); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background: var(--bg-card); border: 1px solid var(--border-color); border-left: 4px solid var(--accent); padding: 12px 20px; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 14px; color: var(--text-heading); transform: translateX(150%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .toast.show { transform: translateX(0); }
+        .toast { background: var(--bg-card); border: 1px solid var(--border-color); border-left: 4px solid var(--accent); padding: 12px 20px; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.5); font-size: 14px; color: var(--text-heading); transform: translateX(150%); opacity: 0; transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s; display: flex; align-items: center; gap: 10px; }
+        .toast.show { transform: translateX(0); opacity: 1; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px; }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-box { background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: var(--radius-lg); width: 100%; max-width: 360px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); transform: translateY(12px) scale(0.97); transition: transform 0.2s; text-align: center; }
         .modal-overlay.show .modal-box { transform: translateY(0) scale(1); }
-        .modal-icon { font-size: 34px; line-height: 1; }
+        .modal-icon { display: flex; justify-content: center; }
+        .modal-icon svg { animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both 0.05s; }
         .modal-title { font-size: 16px; font-weight: 700; color: var(--text-heading); }
         .modal-message { font-size: 14px; color: var(--text-main); line-height: 1.5; }
         .modal-box .btn { width: 100%; justify-content: center; margin-top: 4px; }
@@ -82,7 +95,17 @@
         .nav-item a { position: relative; display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: var(--radius-md); color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.18s, color 0.18s; }
         .nav-item a:hover { background-color: rgba(255,255,255,0.04); color: var(--text-heading); }
         .nav-item.active a { background: linear-gradient(90deg, rgba(91,140,255,0.14), rgba(91,140,255,0.02)); color: var(--text-heading); }
-        .nav-item.active a::before { content: ''; position: absolute; left: -24px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 4px 4px 0; background: var(--accent-grad); }
+        .stat-card:nth-child(1) { animation-delay: 0.02s; }
+        .stat-card:nth-child(2) { animation-delay: 0.08s; }
+        .stat-card:nth-child(3) { animation-delay: 0.14s; }
+        .task-container-list .modern-task-card:nth-child(1) { animation-delay: 0.02s; }
+        .task-container-list .modern-task-card:nth-child(2) { animation-delay: 0.06s; }
+        .task-container-list .modern-task-card:nth-child(3) { animation-delay: 0.1s; }
+        .task-container-list .modern-task-card:nth-child(4) { animation-delay: 0.14s; }
+        .task-container-list .modern-task-card:nth-child(n+5) { animation-delay: 0.18s; }
+
+        .nav-item.active a::before { content: ''; position: absolute; left: -24px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 4px 4px 0; background: var(--accent-grad); animation: growIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes growIn { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 64px; padding-bottom: env(safe-area-inset-bottom); background: rgba(17,22,31,0.88); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); border-top: 1px solid var(--border-color); z-index: 99; justify-content: space-around; align-items: center; }
         .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); text-decoration: none; font-size: 11px; font-weight: 500; transition: color 0.18s, transform 0.18s; padding: 6px 14px; }
@@ -97,11 +120,11 @@
         .avatar { width: 38px; height: 38px; background: var(--accent-grad); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: var(--font-display); color: #fff; box-shadow: 0 3px 10px rgba(91,140,255,0.3); }
 
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-        .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; animation: fadeSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) both; }
         .stat-card::before { content:''; position:absolute; inset: 0 0 auto 0; height: 2px; background: var(--accent-grad); opacity: 0; transition: opacity 0.2s; }
         .stat-card:hover { transform: translateY(-3px); border-color: var(--border-hover); box-shadow: 0 12px 28px rgba(0,0,0,0.35); }
         .stat-card:hover::before { opacity: 1; }
-        .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; display: flex; align-items: center; gap: 6px; }
         .stat-value { font-family: var(--font-display); font-size: 25px; font-weight: 700; color: var(--text-heading); }
 
         .login-wrapper { max-width: 400px; width: 100%; margin: auto; background: linear-gradient(180deg, var(--bg-sidebar), var(--bg-card)); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 32px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: riseIn 0.4s cubic-bezier(0.16,1,0.3,1); }
@@ -140,15 +163,15 @@
         .search-input { flex: 1; min-width: 200px; }
 
         .task-container-list { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; }
-        .modern-task-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: border-color 0.2s, transform 0.2s; border-left: 3px solid var(--border-color); }
-        .modern-task-card:hover { border-color: var(--border-hover); }
+        .modern-task-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: border-color 0.2s, transform 0.2s; border-left: 3px solid var(--border-color); animation: fadeSlideIn 0.38s cubic-bezier(0.16,1,0.3,1) both; }
+        .modern-task-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
         .modern-task-card.st-available { border-left-color: var(--info); }
         .modern-task-card.st-locked { border-left-color: var(--gold); }
         .modern-task-card.st-pending { border-left-color: var(--warning); }
         .modern-task-card.st-failed { border-left-color: var(--danger); }
         .task-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
         .task-card-header h3 { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text-heading); }
-        .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+        .badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
         .badge-available { background: rgba(91,140,255,0.15); color: var(--info); border: 1px solid rgba(91,140,255,0.3); }
         .badge-pending { background: var(--warning-glow); color: #ffcc4d; border: 1px solid rgba(227,160,8,0.3); }
         .badge-failed { background: var(--danger-glow); color: #ff8388; border: 1px solid rgba(240,87,93,0.3); }
@@ -157,13 +180,21 @@
         .info-node { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
         .info-node span:first-child { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
 
-        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 48px 20px; color: var(--text-muted); text-align: center; }
-        .empty-state .e-icon { font-size: 32px; opacity: 0.6; }
+        .stat-card:nth-child(1) { animation-delay: 0.02s; }
+        .stat-card:nth-child(2) { animation-delay: 0.08s; }
+        .stat-card:nth-child(3) { animation-delay: 0.14s; }
+
+        .spin { animation: spin 0.9s linear infinite; }
+
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 48px 20px; color: var(--text-muted); text-align: center; animation: fadeSlideIn 0.4s ease both; }
+        .empty-state .e-icon { opacity: 0.55; margin-bottom: 4px; }
+        .empty-state .e-icon svg { width: 34px; height: 34px; }
         .empty-state .e-title { color: var(--text-heading); font-weight: 600; font-size: 15px; }
         .empty-state .e-sub { font-size: 13px; max-width: 320px; }
 
-        .chat-floating-btn { position: fixed; bottom: 80px; right: 24px; width: 56px; height: 56px; background: var(--accent-grad); color: #fff; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 6px 20px rgba(91,140,255,0.4); z-index: 1000; border: none; transition: transform 0.2s; }
-        .chat-floating-btn:hover { transform: translateY(-2px) scale(1.04); }
+        .chat-floating-btn { position: fixed; bottom: 80px; right: 24px; width: 56px; height: 56px; background: var(--accent-grad); color: #fff; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 20px rgba(91,140,255,0.4); z-index: 1000; border: none; transition: transform 0.2s, box-shadow 0.2s; animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+        .chat-floating-btn:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 10px 26px rgba(91,140,255,0.5); }
+        .chat-floating-btn .icon { width: 24px; height: 24px; }
         .chat-box-window { position: fixed; bottom: 150px; right: 24px; width: 330px; height: 400px; background: var(--bg-sidebar); border: 1px solid var(--border-color); border-radius: var(--radius-lg); display: none; flex-direction: column; box-shadow: 0 16px 44px rgba(0,0,0,0.6); z-index: 1000; overflow: hidden; }
         .chat-header { background: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
         .chat-body { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; overflow-anchor: auto; }
@@ -192,53 +223,76 @@
 </head>
 <body>
 
+<svg aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
+    <defs>
+        <symbol id="icon-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+        <symbol id="icon-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><circle cx="3.2" cy="6" r="1"/><circle cx="3.2" cy="12" r="1"/><circle cx="3.2" cy="18" r="1"/></symbol>
+        <symbol id="icon-banknote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.3"/><path d="M6 12h.01"/><path d="M18 12h.01"/></symbol>
+        <symbol id="icon-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><line x1="15" y1="12" x2="3" y2="12"/></symbol>
+        <symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.6 18.6 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.6 18.6 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></symbol>
+        <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+        <symbol id="icon-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c3 1 5 4 5 8 0 3-1 5-2 6l-1 4-2-3-2 3-1-4c-1-1-2-3-2-6 0-4 2-7 5-8z"/><circle cx="12" cy="9.5" r="1.6"/><path d="M9 16c-2 1-3 3-3 5 2 0 4-1 5-3"/><path d="M15 16c2 1 3 3 3 5-2 0-4-1-5-3"/></symbol>
+        <symbol id="icon-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.7 2.7L16 9.5"/></symbol>
+        <symbol id="icon-x-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></symbol>
+        <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 1 21h22L12 2z"/><line x1="12" y1="9" x2="12" y2="13.5"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+        <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="11.5"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+        <symbol id="icon-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3.5" width="12" height="18" rx="2"/><path d="M9 3.5v2h6v-2"/><line x1="9" y1="10.5" x2="15" y2="10.5"/><line x1="9" y1="14.5" x2="15" y2="14.5"/></symbol>
+        <symbol id="icon-hourglass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M6 2c0 5 3 6 6 8 3-2 6-3 6-8"/><path d="M6 22c0-5 3-6 6-8 3 2 6 3 6 8"/></symbol>
+        <symbol id="icon-smartphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></symbol>
+        <symbol id="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9 22 2z"/></symbol>
+        <symbol id="icon-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.9 8.4 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.4 8.4 0 0 1 8.4-8.5h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
+        <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    </defs>
+</svg>
+
 <div class="toast-container" id="toastContainer"></div>
 
 <div class="modal-overlay" id="customAlertOverlay">
     <div class="modal-box" id="customAlertBox">
-        <div class="modal-icon" id="customAlertIcon">ℹ️</div>
+        <div class="modal-icon" id="customAlertIcon"><svg class="icon icon-xl"><use href="#icon-info"/></svg></div>
         <div class="modal-title" id="customAlertTitle">Informasi</div>
         <div class="modal-message" id="customAlertMessage"></div>
         <button class="btn btn-primary" id="customAlertOkBtn">Oke</button>
     </div>
 </div>
 
-<button class="chat-floating-btn" id="chatOpenBtn">💬</button>
+<button class="chat-floating-btn" id="chatOpenBtn"><svg class="icon"><use href="#icon-chat"/></svg></button>
 
 <div class="chat-box-window" id="chatWindow">
     <div class="chat-header">
         <div style="display:flex; align-items:center; gap:8px;">
-            <span style="width:8px; height:8px; background:#56d364; border-radius:50%;"></span>
+            <span style="width:8px; height:8px; background:#3ddc7a; border-radius:50%; animation: pulseDot 2s ease infinite;"></span>
             <span style="font-size:14px; font-weight:600; color:var(--text-heading);">Live Chat Admin</span>
         </div>
-        <button id="chatCloseBtn" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:16px;">✕</button>
+        <button id="chatCloseBtn" style="background:none; border:none; color:var(--text-muted); cursor:pointer; display:flex; align-items:center;"><svg class="icon"><use href="#icon-x"/></svg></button>
     </div>
     <div class="chat-body" id="chatMessageBody"></div>
     <div class="chat-footer">
         <input type="text" id="chatInputText" class="input-control" style="flex:1; padding:6px 12px;" placeholder="Ketik pesan ke admin...">
-        <button class="btn btn-primary" id="chatSendBtn" style="padding:6px 12px;">Kirim</button>
+        <button class="btn btn-primary" id="chatSendBtn" style="padding:6px 12px;"><svg class="icon icon-sm"><use href="#icon-send"/></svg><span>Kirim</span></button>
     </div>
 </div>
 
 <div class="bottom-nav" id="mobileNav" style="display: none;">
-    <a href="#" class="bottom-nav-item active" id="mNavTasks">📋 Tasks</a>
-    <a href="#" class="bottom-nav-item" id="mNavWithdraw">💰 Tarik Saldo</a>
-    <a href="#" class="bottom-nav-item" id="mNavLogout">🚪 Keluar</a>
+    <a href="#" class="bottom-nav-item active" id="mNavTasks"><svg class="icon"><use href="#icon-clipboard"/></svg><span>Tasks</span></a>
+    <a href="#" class="bottom-nav-item" id="mNavWithdraw"><svg class="icon"><use href="#icon-banknote"/></svg><span>Tarik Saldo</span></a>
+    <a href="#" class="bottom-nav-item" id="mNavLogout"><svg class="icon"><use href="#icon-logout"/></svg><span>Keluar</span></a>
 </div>
 
 <div class="sidebar" id="sidebarPanel" style="display: none;">
-    <div class="logo-area"><span class="logo-icon">✉️</span><span>Job Gmail</span></div>
+    <div class="logo-area"><span class="logo-icon"><svg class="icon icon-lg" style="color:#fff;"><use href="#icon-mail"/></svg></span><span>Job Gmail</span></div>
     <ul class="nav-menu">
-        <li class="nav-item active" id="dNavTasks"><a href="#">📋 Manajemen Tugas</a></li>
-        <li class="nav-item" id="dNavWithdraw"><a href="#">💰 Tarik Saldo (DANA)</a></li>
-        <li class="nav-item" id="dNavLogout"><a href="#">🚪 Keluar Halaman</a></li>
+        <li class="nav-item active" id="dNavTasks"><a href="#"><svg class="icon"><use href="#icon-clipboard"/></svg><span>Manajemen Tugas</span></a></li>
+        <li class="nav-item" id="dNavWithdraw"><a href="#"><svg class="icon"><use href="#icon-banknote"/></svg><span>Tarik Saldo (DANA)</span></a></li>
+        <li class="nav-item" id="dNavLogout"><a href="#"><svg class="icon"><use href="#icon-logout"/></svg><span>Keluar Halaman</span></a></li>
     </ul>
 </div>
 
 <div class="main-panel" id="mainContainer">
     <div id="loginView" class="view-layout">
         <div class="login-wrapper">
-            <div class="logo-area" style="justify-content: center;"><span class="logo-icon">✉️</span><span>Job Gmail</span></div>
+            <div class="logo-area" style="justify-content: center;"><span class="logo-icon"><svg class="icon icon-lg" style="color:#fff;"><use href="#icon-mail"/></svg></span><span>Job Gmail</span></div>
 
             <div class="auth-tabs">
                 <button type="button" class="auth-tab active" id="tabLoginBtn">Masuk</button>
@@ -254,12 +308,12 @@
                     <label>Password</label>
                     <div class="password-field-wrap">
                         <input type="password" id="loginPassword" class="input-control" placeholder="Masukkan password...">
-                        <button type="button" class="password-toggle-btn" data-target="loginPassword" aria-label="Lihat/sembunyikan password">👁️</button>
+                        <button type="button" class="password-toggle-btn" data-target="loginPassword" aria-label="Lihat/sembunyikan password"><svg class="icon"><use href="#icon-eye"/></svg></button>
                     </div>
                 </div>
                 <p id="loginErrorMsg" class="auth-error hidden"></p>
                 <div class="cf-turnstile" id="loginTurnstile" data-sitekey="0x4AAAAAADuSyjdOJeGbXbky" data-callback="onLoginTurnstileSuccess" data-expired-callback="onLoginTurnstileExpired" data-error-callback="onLoginTurnstileExpired" data-theme="dark"></div>
-                <button class="btn btn-primary" id="loginBtn" disabled>🔒 Selesaikan verifikasi untuk masuk</button>
+                <button class="btn btn-primary" id="loginBtn" disabled><svg class="icon"><use href="#icon-lock"/></svg><span>Selesaikan verifikasi untuk masuk</span></button>
             </div>
 
             <div id="registerFormPanel" class="auth-panel hidden">
@@ -271,19 +325,19 @@
                     <label>Password</label>
                     <div class="password-field-wrap">
                         <input type="password" id="regPassword" class="input-control" placeholder="Buat password...">
-                        <button type="button" class="password-toggle-btn" data-target="regPassword" aria-label="Lihat/sembunyikan password">👁️</button>
+                        <button type="button" class="password-toggle-btn" data-target="regPassword" aria-label="Lihat/sembunyikan password"><svg class="icon"><use href="#icon-eye"/></svg></button>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Ulangi Password</label>
                     <div class="password-field-wrap">
                         <input type="password" id="regPasswordConfirm" class="input-control" placeholder="Ulangi password...">
-                        <button type="button" class="password-toggle-btn" data-target="regPasswordConfirm" aria-label="Lihat/sembunyikan password">👁️</button>
+                        <button type="button" class="password-toggle-btn" data-target="regPasswordConfirm" aria-label="Lihat/sembunyikan password"><svg class="icon"><use href="#icon-eye"/></svg></button>
                     </div>
                 </div>
                 <p id="registerErrorMsg" class="auth-error hidden"></p>
                 <div class="cf-turnstile" id="registerTurnstile" data-sitekey="0x4AAAAAADuSyjdOJeGbXbky" data-callback="onRegisterTurnstileSuccess" data-expired-callback="onRegisterTurnstileExpired" data-error-callback="onRegisterTurnstileExpired" data-theme="dark"></div>
-                <button class="btn btn-primary" id="registerBtn" disabled>🔒 Selesaikan verifikasi untuk daftar</button>
+                <button class="btn btn-primary" id="registerBtn" disabled><svg class="icon"><use href="#icon-lock"/></svg><span>Selesaikan verifikasi untuk daftar</span></button>
             </div>
 
             <p class="auth-hint">Dikelola dan dilindungi oleh Cloudflare</p>
@@ -305,9 +359,9 @@
         </div>
 
         <div class="stats-grid">
-            <div class="stat-card"><span class="stat-label">💰 Saldo Anda</span><div class="stat-value" id="statSaldo" style="color: #ffca28;">Rp0</div></div>
-            <div class="stat-card"><span class="stat-label">📋 Task Tersedia</span><div class="stat-value" id="statAvail">0</div></div>
-            <div class="stat-card"><span class="stat-label">⏳ Status Tugas</span><div class="stat-value" id="statStatusText" style="font-size: 16px; margin-top:8px; color: var(--accent);">Tidak Ada</div></div>
+            <div class="stat-card"><span class="stat-label"><svg class="icon icon-sm"><use href="#icon-banknote"/></svg>Saldo Anda</span><div class="stat-value" id="statSaldo" style="color: var(--gold);">Rp0</div></div>
+            <div class="stat-card"><span class="stat-label"><svg class="icon icon-sm"><use href="#icon-clipboard"/></svg>Task Tersedia</span><div class="stat-value" id="statAvail">0</div></div>
+            <div class="stat-card"><span class="stat-label"><svg class="icon icon-sm"><use href="#icon-hourglass"/></svg>Status Tugas</span><div class="stat-value" id="statStatusText" style="font-size: 16px; margin-top:8px; color: var(--accent); display:flex; align-items:center; gap:6px;">Tidak Ada</div></div>
         </div>
 
         <div id="tasksSubView" class="view-layout">
@@ -319,7 +373,7 @@
 
         <div id="withdrawSubView" class="view-layout hidden">
             <div class="modern-task-card" style="max-width: 500px; width:100%;">
-                <h3>Tarik Saldo Tercepat via DANA 📱</h3>
+                <h3 style="display:flex; align-items:center; gap:8px;"><svg class="icon icon-lg"><use href="#icon-smartphone"/></svg>Tarik Saldo Tercepat via DANA</h3>
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Masukkan nomor akun dompet digital DANA Anda dengan teliti.</p>
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label>Nomor Akun DANA</label>
@@ -329,7 +383,7 @@
                     <label>Jumlah Penarikan (Rp)</label>
                     <input type="number" id="wdAmount" class="input-control" placeholder="Jumlah penarikan...">
                 </div>
-                <button class="btn btn-warning" id="btnRequestWd">💸 Ajukan Penarikan Dana</button>
+                <button class="btn btn-warning" id="btnRequestWd"><svg class="icon"><use href="#icon-banknote"/></svg><span>Ajukan Penarikan Dana</span></button>
             </div>
         </div>
     </div>
@@ -343,6 +397,11 @@
     (function(){
         'use strict';
 
+        // Helper kecil untuk membangun markup ikon SVG dari sprite di atas.
+        function icon(name, cls) {
+            return `<svg class="icon ${cls || ''}"><use href="#icon-${name}"/></svg>`;
+        }
+
         const customAlertOverlay = document.getElementById('customAlertOverlay');
         const customAlertIcon = document.getElementById('customAlertIcon');
         const customAlertTitle = document.getElementById('customAlertTitle');
@@ -350,17 +409,17 @@
         const customAlertOkBtn = document.getElementById('customAlertOkBtn');
 
         const ALERT_PRESETS = {
-            info:    { icon: 'ℹ️', title: 'Informasi', cls: 'modal-info' },
-            success: { icon: '✅', title: 'Berhasil', cls: 'modal-success' },
-            error:   { icon: '❌', title: 'Gagal', cls: 'modal-error' },
-            warning: { icon: '⚠️', title: 'Perhatian', cls: 'modal-warning' }
+            info:    { icon: icon('info', 'icon-xl'), title: 'Informasi', cls: 'modal-info' },
+            success: { icon: icon('check-circle', 'icon-xl'), title: 'Berhasil', cls: 'modal-success' },
+            error:   { icon: icon('x-circle', 'icon-xl'), title: 'Gagal', cls: 'modal-error' },
+            warning: { icon: icon('alert-triangle', 'icon-xl'), title: 'Perhatian', cls: 'modal-warning' }
         };
 
         function customAlert(message, type = 'info') {
             const preset = ALERT_PRESETS[type] || ALERT_PRESETS.info;
             customAlertOverlay.classList.remove('modal-info', 'modal-success', 'modal-error', 'modal-warning');
             customAlertOverlay.classList.add(preset.cls);
-            customAlertIcon.textContent = preset.icon;
+            customAlertIcon.innerHTML = preset.icon;
             customAlertTitle.textContent = preset.title;
             customAlertMessage.textContent = message;
             customAlertOverlay.classList.add('show');
@@ -378,7 +437,7 @@
                 if(!input) return;
                 const isHidden = input.type === 'password';
                 input.type = isHidden ? 'text' : 'password';
-                btn.textContent = isHidden ? '🙈' : '👁️';
+                btn.innerHTML = icon(isHidden ? 'eye-off' : 'eye');
                 btn.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Lihat password');
             });
         });
@@ -434,13 +493,14 @@
             document.getElementById('statAvail').textContent = countAvail;
 
             let statusLabelText = 'Tidak Ada';
+            let statusIcon = '';
             if(userObj.taskId) {
-                if(userObj.status === 'locked') statusLabelText = '🔒 Sedang Kerja';
-                if(userObj.status === 'pending') statusLabelText = '⏳ Menunggu Validasi';
-                if(userObj.status === 'failed') statusLabelText = '❌ Ditolak Admin';
-                if(userObj.status === 'done') statusLabelText = '✅ Selesai Diterima';
+                if(userObj.status === 'locked') { statusLabelText = 'Sedang Kerja'; statusIcon = icon('lock', 'icon-sm'); }
+                if(userObj.status === 'pending') { statusLabelText = 'Menunggu Validasi'; statusIcon = icon('hourglass', 'icon-sm'); }
+                if(userObj.status === 'failed') { statusLabelText = 'Ditolak Admin'; statusIcon = icon('x-circle', 'icon-sm'); }
+                if(userObj.status === 'done') { statusLabelText = 'Selesai Diterima'; statusIcon = icon('check-circle', 'icon-sm'); }
             }
-            document.getElementById('statStatusText').textContent = statusLabelText;
+            document.getElementById('statStatusText').innerHTML = statusIcon + statusLabelText;
 
             // Tanda tangan data yang benar-benar memengaruhi tampilan daftar tugas milik user ini.
             const tasksSig = JSON.stringify(window.globalData.tasks) + '|' + JSON.stringify(userObj) + '|' +
@@ -485,9 +545,9 @@
             if (cards.length === 0) {
                 activeTasksList.innerHTML = `
                     <div class="empty-state">
-                        <div class="e-icon">🗒️</div>
+                        <div class="e-icon">${icon('clipboard', 'icon-xl')}</div>
                         <div class="e-title">Belum ada tugas untuk ditampilkan</div>
-                        <div class="e-sub">Tugas baru akan otomatis muncul di sini<br>Maksimal di tampilkan 20 Tugas.</div>
+                        <div class="e-sub">Tugas baru akan otomatis muncul di sini begitu admin mempublikasikannya.</div>
                     </div>`;
                 return;
             }
@@ -498,22 +558,22 @@
             const card = document.createElement('div');
             card.className = 'modern-task-card st-' + status;
             let badge = `<span class="badge badge-available">Tersedia</span>`;
-            let action = `<button class="btn btn-primary" onclick="window.handleTask('${task.id}', 'take')">🚀 Ambil Tugas</button>`;
+            let action = `<button class="btn btn-primary" onclick="window.handleTask('${task.id}', 'take')">${icon('rocket', 'icon-sm')}<span>Ambil Tugas</span></button>`;
 
             if(status === 'locked') {
-                badge = `<span class="badge badge-pending">🔒 Anda Ambil</span>`;
+                badge = `<span class="badge badge-pending">${icon('lock', 'icon-sm')}Anda Ambil</span>`;
                 action = `
                     <div style="display:flex;gap:10px;width:100%;flex-wrap:wrap;">
                         <input type="text" id="note_${task.id}" class="input-control" style="flex:1;min-width:200px;" placeholder="Masukkan Bukti Link / Catatan Kerja...">
-                        <button class="btn btn-primary" onclick="window.handleTask('${task.id}', 'submit')">Submit Kerja</button>
-                        <button class="btn btn-danger" onclick="window.handleTask('${task.id}', 'cancel')">Batal</button>
+                        <button class="btn btn-primary" onclick="window.handleTask('${task.id}', 'submit')">${icon('send', 'icon-sm')}<span>Submit Kerja</span></button>
+                        <button class="btn btn-danger" onclick="window.handleTask('${task.id}', 'cancel')">${icon('x', 'icon-sm')}<span>Batal</span></button>
                     </div>
                 `;
             } else if(status === 'pending') {
-                badge = `<span class="badge badge-pending">⏳ Menunggu Validasi Admin</span>`;
+                badge = `<span class="badge badge-pending">${icon('hourglass', 'icon-sm')}Menunggu Validasi Admin</span>`;
                 action = `<span style="color:var(--text-muted); font-size:13px;">Tugas dikirim. Harap tunggu konfirmasi admin...</span>`;
             } else if(status === 'failed') {
-                badge = `<span class="badge badge-failed">❌ Ditolak</span>`;
+                badge = `<span class="badge badge-failed">${icon('x-circle', 'icon-sm')}Ditolak</span>`;
                 action = `<button class="btn btn-secondary" onclick="window.handleTask('${task.id}', 'clear')">Bersihkan State & Mulai Baru</button>`;
             }
 
@@ -622,22 +682,22 @@
         window.onLoginTurnstileSuccess = function(token) {
             loginTurnstileToken = token;
             loginBtnEl.disabled = false;
-            loginBtnEl.textContent = '🚀 Masuk';
+            loginBtnEl.innerHTML = icon('send', 'icon-sm') + '<span>Masuk</span>';
         };
         window.onLoginTurnstileExpired = function() {
             loginTurnstileToken = null;
             loginBtnEl.disabled = true;
-            loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+            loginBtnEl.innerHTML = icon('lock', 'icon-sm') + '<span>Selesaikan verifikasi untuk masuk</span>';
         };
         window.onRegisterTurnstileSuccess = function(token) {
             registerTurnstileToken = token;
             registerBtnEl.disabled = false;
-            registerBtnEl.textContent = '✅ Daftar Sekarang';
+            registerBtnEl.innerHTML = icon('check-circle', 'icon-sm') + '<span>Daftar Sekarang</span>';
         };
         window.onRegisterTurnstileExpired = function() {
             registerTurnstileToken = null;
             registerBtnEl.disabled = true;
-            registerBtnEl.textContent = '🔒 Selesaikan verifikasi untuk daftar';
+            registerBtnEl.innerHTML = icon('lock', 'icon-sm') + '<span>Selesaikan verifikasi untuk daftar</span>';
         };
 
         function enterDashboard(user, cloudData) {
@@ -673,13 +733,13 @@
                 if(!cloudData.users[user]) {
                     showAuthError(loginErrorMsg, 'Akun tidak ditemukan. Silakan daftar dulu di tab "Daftar".');
                     if(window.turnstile) window.turnstile.reset('#loginTurnstile');
-                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.innerHTML = icon('lock', 'icon-sm') + '<span>Selesaikan verifikasi untuk masuk</span>';
                     return;
                 }
                 if(cloudData.users[user].password !== pass) {
                     showAuthError(loginErrorMsg, 'Password salah, silakan coba lagi.');
                     if(window.turnstile) window.turnstile.reset('#loginTurnstile');
-                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.textContent = '🔒 Selesaikan verifikasi untuk masuk';
+                    loginTurnstileToken = null; loginBtnEl.disabled = true; loginBtnEl.innerHTML = icon('lock', 'icon-sm') + '<span>Selesaikan verifikasi untuk masuk</span>';
                     return;
                 }
 
@@ -710,7 +770,7 @@
                 if(cloudData.users[user]) {
                     showAuthError(registerErrorMsg, 'Username ini sudah terdaftar. Silakan masuk lewat tab "Masuk".');
                     if(window.turnstile) window.turnstile.reset('#registerTurnstile');
-                    registerTurnstileToken = null; registerBtnEl.disabled = true; registerBtnEl.textContent = '🔒 Selesaikan verifikasi untuk daftar';
+                    registerTurnstileToken = null; registerBtnEl.disabled = true; registerBtnEl.innerHTML = icon('lock', 'icon-sm') + '<span>Selesaikan verifikasi untuk daftar</span>';
                     return;
                 }
 

@@ -418,11 +418,11 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 <script src="scriptconfig6624991ssl.js"></script>
+<script src="scriptconfig278326.js"></script>
 <script>
     (function(){
         'use strict';
 
-        // Helper kecil untuk membangun markup ikon SVG dari sprite di atas.
         function icon(name, cls) {
             return `<svg class="icon ${cls || ''}"><use href="#icon-${name}"/></svg>`;
         }
@@ -471,8 +471,6 @@
         const sessionLoadingView = document.getElementById('sessionLoadingView');
         const SESSION_KEY = 'jobGmailSavedUsername';
 
-        // Kalau sebelumnya sudah login, langsung sembunyikan form login di awal
-        // supaya tidak "kelap-kelip" muncul sebentar sebelum sesi dipulihkan.
         let savedUsername = null;
         try { savedUsername = localStorage.getItem(SESSION_KEY); } catch(e) { savedUsername = null; }
         if (savedUsername) {
@@ -514,11 +512,7 @@
             });
             _realtimeSyncStarted = true;
         }
-
-        // --- Anti-goyang (diffing): panel ini sebelumnya menggambar ulang SELURUH daftar
-        // setiap kali dokumen Firestore berubah -- termasuk saat itu cuma heartbeat "online"
-        // dari user lain. Sekarang kita bandingkan dulu isi datanya, dan hanya re-render
-        // bagian yang benar-benar berubah supaya tidak ada elemen yang "loncat-loncat".
+.
         let _lastTasksSig = null;
         let _lastChatSig = null;
 
@@ -542,7 +536,6 @@
             }
             document.getElementById('statStatusText').innerHTML = statusIcon + statusLabelText;
 
-            // Tanda tangan data yang benar-benar memengaruhi tampilan daftar tugas milik user ini.
             const tasksSig = JSON.stringify(window.globalData.tasks) + '|' + JSON.stringify(userObj) + '|' +
                 JSON.stringify(Object.values(window.globalData.users).map(u => u.taskId));
             if (force || tasksSig !== _lastTasksSig) {
@@ -560,8 +553,6 @@
         let _proofUploadInProgress = false;
 
         function renderTasks() {
-            // Jangan gambar ulang kalau user sedang mengetik catatan kerja di kartu yang aktif,
-            // atau sedang ada proses unggah foto berjalan -- supaya tidak hilang / ikut "geser".
             const active = document.activeElement;
             if (active && active.id && active.id.startsWith('caption_') && activeTasksList.contains(active)) {
                 return;
@@ -634,8 +625,8 @@
             card.innerHTML = `
                 <div class="task-card-header"><h3>ID: ${task.id}</h3>${badge}</div>
                 <div class="task-grid-info">
-                    <div class="info-node"><span>Target</span><span>${task.name}</span></div>
-                    <div class="info-node"><span>Email</span><span>${task.email}</span></div>
+                    <div class="info-node"><span>Target</span><span>${status==='locked' ? task.name : '******'}</span></div>
+                    <div class="info-node"><span>Email</span><span>${status==='locked' ? task.email : '******'}</span></div>
                     <div class="info-node"><span>Password</span><span>${status==='locked' ? task.password : '******'}</span></div>
                     <div class="info-node"><span>Komisi</span><span style="color:var(--gold); font-weight:bold;">Rp${task.reward.toLocaleString('id-ID')}</span></div>
                 </div>
@@ -669,8 +660,6 @@
             submitBtn.disabled = !(hasCaption && !!file);
         };
 
-        // Mengecilkan & mengompres foto di browser sebelum diunggah, supaya hemat
-        // kuota dan tidak lambat -- foto HP modern bisa 4-10MB kalau tidak dikompres.
         function compressProofImage(file, maxDimension, quality) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -726,12 +715,24 @@
                 window.globalData.users[window.currentUser].proofPhotoUrl = url;
                 _proofUploadInProgress = false;
                 window.pushDataToCloud();
+                notifyTelegram(`🟡 <b>Submit Tugas</b>\nUser: ${window.currentUser}\nTask ID: ${id}\nCatatan: ${caption}\nBukti foto: ${url}`);
             }).catch((err) => {
                 console.error('Gagal mengunggah foto bukti:', err);
                 _proofUploadInProgress = false;
                 customAlert('Gagal mengunggah foto bukti. Periksa koneksi internet Anda lalu coba lagi.', 'error');
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = icon('send', 'icon-sm') + '<span>Submit Kerja</span>'; }
             });
+        }
+
+        function notifyTelegram(text) {
+            const token = window.TELEGRAM_BOT_TOKEN;
+            const chatId = window.TELEGRAM_CHAT_ID;
+            if (!token || !chatId) return;
+            fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'HTML' })
+            }).catch((err) => console.warn('Gagal mengirim notifikasi Telegram:', err));
         }
 
         window.handleTask = function(id, act) {
@@ -742,6 +743,7 @@
                 window.globalData.users[window.currentUser].taskId = id;
                 window.globalData.users[window.currentUser].status = 'locked';
                 window.globalData.users[window.currentUser].timestamp = new Date().toLocaleString('id-ID');
+                notifyTelegram(`🟢 <b>Ambil Tugas</b>\nUser: ${window.currentUser}\nTask ID: ${id}`);
             } else if(act === 'submit') {
                 submitTaskProof(id);
                 return;
@@ -773,6 +775,7 @@
             if(!window.globalData.chats[window.currentUser]) window.globalData.chats[window.currentUser] = [];
             window.globalData.chats[window.currentUser].push({ sender: window.currentUser, text: txt, time: Date.now() });
             window.pushDataToCloud();
+            notifyTelegram(`💬 <b>Live Chat</b>\nUser: ${window.currentUser}\nPesan: ${txt}`);
             chatInputText.value = '';
         }
 
@@ -863,9 +866,6 @@
             startRealtimeSync();
         }
 
-        // Memulihkan sesi login dari penyimpanan lokal browser, supaya user tidak
-        // perlu login ulang setiap kali halaman dimuat ulang / dibuka lagi. Sesi
-        // baru dihapus saat user menekan tombol "Keluar" secara eksplisit.
         let _sessionRestoreAttempts = 0;
         function attemptSessionRestore() {
             const firestoreDb = window.db || (typeof db !== 'undefined' ? db : null);
@@ -878,7 +878,6 @@
                 if (cloudData.users[savedUsername]) {
                     enterDashboard(savedUsername, cloudData);
                 } else {
-                    // Akun sudah tidak ada lagi di database -- bersihkan sesi lokal.
                     localStorage.removeItem(SESSION_KEY);
                     sessionLoadingView.classList.add('hidden');
                     loginView.classList.remove('hidden');
@@ -886,7 +885,6 @@
             }).catch(() => {
                 _sessionRestoreAttempts++;
                 if (_sessionRestoreAttempts > 5) {
-                    // Terus gagal konek -- jangan bikin user terjebak di layar loading selamanya.
                     sessionLoadingView.classList.add('hidden');
                     loginView.classList.remove('hidden');
                     customAlert('Gagal memulihkan sesi (koneksi bermasalah). Silakan masuk kembali.', 'error');
@@ -993,12 +991,6 @@
 
         setTimeout(startRealtimeSync, 300);
 
-        // Catatan: seluruh data (semua user + semua tugas) disimpan dalam SATU dokumen
-        // Firestore. Setiap "heartbeat" di sini menulis ulang dokumen itu, yang membuat
-        // onSnapshot menyala untuk SEMUA orang yang sedang online -- termasuk user lain
-        // dan admin -- dan sebelumnya memicu render ulang total setiap 4 detik (makanya
-        // terasa "gerak-gerak"/berpindah pindah). Diperlambat jadi 20 detik + logika
-        // diffing di atas membuat re-render hanya terjadi saat datanya benar-benar berubah.
         setInterval(function(){
             if(window.currentUser && window.globalData.users[window.currentUser]) {
                 window.globalData.users[window.currentUser].lastSeen = Date.now();

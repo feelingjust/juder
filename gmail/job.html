@@ -729,7 +729,7 @@
 
             compressProofImage(file, 1280, 0.75).then((blob) => {
                 if (settled) return;
-                if (submitBtn) submitBtn.innerHTML = icon('refresh', 'icon-sm spin') + '<span>Mengirim ke Telegram...</span>';
+                if (submitBtn) submitBtn.innerHTML = icon('refresh', 'icon-sm spin') + '<span>Loading...</span>';
 
                 const captionText = `🟡 <b>Submit Tugas</b>\nUser: ${window.currentUser}\nTask ID: ${id}\nCatatan: ${caption}`;
                 return sendPhotoToTelegram(blob, captionText);

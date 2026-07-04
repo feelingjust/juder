@@ -14,6 +14,12 @@ firebase.initializeApp(firebaseConfig);
 window.db = firebase.firestore();
 
 try {
+    window.storage = firebase.storage();
+} catch (err) {
+    console.warn('Firebase Storage tidak aktif di project ini:', err);
+}
+
+try {
     firebase.analytics();
 } catch (err) {
     console.warn('Firebase Analytics tidak aktif di browser ini:', err);
@@ -37,6 +43,7 @@ window.processWork = function(user, act) {
         window.globalData.users[user].taskId = null;
         window.globalData.users[user].status = 'pending';
         window.globalData.users[user].workNotes = '';
+        window.globalData.users[user].proofPhotoUrl = '';
     }
     window.pushDataToCloud();
 };

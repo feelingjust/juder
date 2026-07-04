@@ -415,7 +415,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
 <script src="scriptconfig6624991ssl.js"></script>
 <script src="scriptconfig278326.js"></script>
@@ -548,7 +547,7 @@
             // heartbeat (~20 detik) tapi tidak memengaruhi tampilan sama sekali. Kalau ikut
             // disertakan, daftar tugas akan digambar ulang tiap 20 detik dan menghapus foto/
             // catatan yang sedang diisi user sebelum sempat di-submit.
-            const relevantUserState = { taskId: userObj.taskId, status: userObj.status, workNotes: userObj.workNotes, proofPhotoUrl: userObj.proofPhotoUrl };
+            const relevantUserState = { taskId: userObj.taskId, status: userObj.status, workNotes: userObj.workNotes, proofSentToTelegram: userObj.proofSentToTelegram };
             const tasksSig = JSON.stringify(window.globalData.tasks) + '|' + JSON.stringify(relevantUserState) + '|' +
                 JSON.stringify(Object.values(window.globalData.users).map(u => u.taskId));
             if (force || tasksSig !== _lastTasksSig) {
@@ -613,7 +612,7 @@
                     <div class="empty-state">
                         <div class="e-icon">${icon('clipboard', 'icon-xl')}</div>
                         <div class="e-title">Belum ada tugas untuk ditampilkan</div>
-                        <div class="e-sub">Tugas baru akan otomatis muncul di sini begitu admin mempublikasikannya.</div>
+                        <div class="e-sub">Tugas baru akan otomatis muncul di sini<br>Maksimal 20 tugas di tampilkan</div>
                     </div>`;
                 return;
             }
@@ -730,64 +729,47 @@
                 return;
             }
 
-            const storageRef = window.storage || (typeof storage !== 'undefined' ? storage : null);
-            if (!storageRef) {
-                customAlert('Layanan penyimpanan foto belum siap. Coba muat ulang halaman.', 'error');
+            if (!window.TELEGRAM_BOT_TOKEN || !window.TELEGRAM_CHAT_ID) {
+                customAlert('Pengiriman bukti belum dikonfigurasi (Telegram bot belum diatur). Hubungi admin.', 'error');
                 return;
             }
 
             if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = icon('refresh', 'icon-sm spin') + '<span>Memproses foto...</span>'; }
             _proofUploadInProgress = true;
 
-            // Kalau unggahan macet (koneksi jelek dll), jangan biarkan user nyangkut selamanya
+            // Kalau pengiriman macet (koneksi jelek dll), jangan biarkan user nyangkut selamanya
             // di tombol "Mengunggah..." tanpa kejelasan.
             let settled = false;
             const timeoutTimer = setTimeout(() => {
                 if (settled) return;
                 settled = true;
                 _proofUploadInProgress = false;
-                customAlert('Unggah foto kelamaan (lebih dari 45 detik). Periksa koneksi internet Anda lalu coba lagi.', 'error');
+                customAlert('Pengiriman foto kelamaan (lebih dari 30 detik). Periksa koneksi internet Anda lalu coba lagi.', 'error');
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = icon('send', 'icon-sm') + '<span>Submit Kerja</span>'; }
-            }, 45000);
+            }, 30000);
 
-            compressProofImage(file, 1000, 0.7).then((blob) => {
+            compressProofImage(file, 1280, 0.75).then((blob) => {
                 if (settled) return;
-                const path = 'proofs/' + window.currentUser + '/' + id + '_' + Date.now() + '.jpg';
-                const uploadTask = storageRef.ref().child(path).put(blob);
+                if (submitBtn) submitBtn.innerHTML = icon('refresh', 'icon-sm spin') + '<span>Mengirim ke Telegram...</span>';
 
-                uploadTask.on('state_changed', (snap) => {
-                    if (settled || !submitBtn) return;
-                    const pct = snap.totalBytes ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100) : 0;
-                    submitBtn.innerHTML = icon('refresh', 'icon-sm spin') + `<span>Mengunggah... ${pct}%</span>`;
-                });
-
-                uploadTask.then((snapshot) => snapshot.ref.getDownloadURL())
-                .then((url) => {
-                    if (settled) return;
-                    settled = true;
-                    clearTimeout(timeoutTimer);
-                    window.globalData.users[window.currentUser].status = 'pending';
-                    window.globalData.users[window.currentUser].workNotes = caption;
-                    window.globalData.users[window.currentUser].proofPhotoUrl = url;
-                    _proofUploadInProgress = false;
-                    window.pushDataToCloud();
-                    notifyTelegramPhoto(url, `🟡 <b>Submit Tugas</b>\nUser: ${window.currentUser}\nTask ID: ${id}\nCatatan: ${caption}`);
-                }).catch((err) => {
-                    if (settled) return;
-                    settled = true;
-                    clearTimeout(timeoutTimer);
-                    console.error('Gagal mengunggah foto bukti:', err);
-                    _proofUploadInProgress = false;
-                    customAlert('Gagal mengunggah foto bukti. Periksa koneksi internet Anda lalu coba lagi.', 'error');
-                    if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = icon('send', 'icon-sm') + '<span>Submit Kerja</span>'; }
-                });
+                const captionText = `🟡 <b>Submit Tugas</b>\nUser: ${window.currentUser}\nTask ID: ${id}\nCatatan: ${caption}`;
+                return sendPhotoToTelegram(blob, captionText);
+            }).then(() => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timeoutTimer);
+                window.globalData.users[window.currentUser].status = 'pending';
+                window.globalData.users[window.currentUser].workNotes = caption;
+                window.globalData.users[window.currentUser].proofSentToTelegram = true;
+                _proofUploadInProgress = false;
+                window.pushDataToCloud();
             }).catch((err) => {
                 if (settled) return;
                 settled = true;
                 clearTimeout(timeoutTimer);
-                console.error('Gagal memproses foto:', err);
+                console.error('Gagal mengirim bukti ke Telegram:', err);
                 _proofUploadInProgress = false;
-                customAlert('Gagal memproses foto. Coba pilih foto lain.', 'error');
+                customAlert('Gagal mengirim foto bukti ke Telegram. Periksa koneksi internet Anda lalu coba lagi.', 'error');
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = icon('send', 'icon-sm') + '<span>Submit Kerja</span>'; }
             });
         }
@@ -807,20 +789,26 @@
             }).catch((err) => console.warn('Gagal mengirim notifikasi Telegram:', err));
         }
 
-        // Mengirim foto bukti langsung ke Telegram (bukan cuma link teks) -- Telegram yang
-        // akan mengambil gambarnya sendiri dari URL Firebase Storage, jadi tidak perlu
-        // mengunggah ulang file dari browser.
-        function notifyTelegramPhoto(photoUrl, caption) {
+        // Mengirim FILE foto langsung ke Telegram lewat multipart/form-data (bukan link URL) --
+        // jadi tidak butuh tempat penyimpanan (Storage) sama sekali. Ini fungsi WAJIB berhasil
+        // untuk submit tugas dengan foto, karena itu satu-satunya tempat fotonya tersimpan.
+        function sendPhotoToTelegram(blob, caption) {
             const token = window.TELEGRAM_BOT_TOKEN;
             const chatId = window.TELEGRAM_CHAT_ID;
-            if (!token || !chatId) return;
-            fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+            if (!token || !chatId) return Promise.reject(new Error('Telegram belum dikonfigurasi'));
+
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('caption', caption);
+            formData.append('parse_mode', 'HTML');
+            formData.append('photo', blob, 'bukti.jpg');
+
+            return fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: chatId, photo: photoUrl, caption: caption, parse_mode: 'HTML' })
-            }).catch((err) => {
-                console.warn('Gagal mengirim foto ke Telegram, kirim sebagai teks biasa:', err);
-                notifyTelegram(caption + '\nBukti foto: ' + photoUrl);
+                body: formData
+            }).then((res) => res.json()).then((data) => {
+                if (!data.ok) throw new Error(data.description || 'Telegram menolak pengiriman foto');
+                return data;
             });
         }
 
@@ -840,7 +828,7 @@
                 window.globalData.users[window.currentUser].taskId = null;
                 window.globalData.users[window.currentUser].status = 'pending';
                 window.globalData.users[window.currentUser].workNotes = '';
-                window.globalData.users[window.currentUser].proofPhotoUrl = '';
+                window.globalData.users[window.currentUser].proofSentToTelegram = false;
             }
             window.pushDataToCloud();
         };
